@@ -1,0 +1,9 @@
+# generated or machine specific files
+results/cases/
+*.h5
+*.xml
+tallies.out
+__pycache__/
+*.pyc
+.env
+.trae-html-share-packages/

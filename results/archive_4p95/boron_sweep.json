@@ -1,0 +1,58 @@
+{
+  "model": "NuScale 17x17 pin cell, cold zero power, reflective boundaries",
+  "temperature_K": 294.0,
+  "enrichment_wt_pct": 4.95,
+  "particles": 20000,
+  "batches": 120,
+  "inactive_batches": 30,
+  "boron_sweep": [
+    {
+      "boron_ppm": 0,
+      "k_inf": 1.4843763438488904,
+      "k_std": 0.0006759098340169817
+    },
+    {
+      "boron_ppm": 500,
+      "k_inf": 1.4602351527877016,
+      "k_std": 0.0005538140671495503
+    },
+    {
+      "boron_ppm": 1000,
+      "k_inf": 1.4380412485644887,
+      "k_std": 0.0006903671150377142
+    },
+    {
+      "boron_ppm": 1500,
+      "k_inf": 1.4173455746514025,
+      "k_std": 0.0006596662809148181
+    },
+    {
+      "boron_ppm": 2000,
+      "k_inf": 1.395232025021707,
+      "k_std": 0.0007078917747121883
+    },
+    {
+      "boron_ppm": 2500,
+      "k_inf": 1.3738287406858545,
+      "k_std": 0.0007364026914212584
+    },
+    {
+      "boron_ppm": 3000,
+      "k_inf": 1.353921816504717,
+      "k_std": 0.0007850761079332627
+    },
+    {
+      "boron_ppm": 3500,
+      "k_inf": 1.3366660371356633,
+      "k_std": 0.0006585356466967571
+    },
+    {
+      "boron_ppm": 4000,
+      "k_inf": 1.3176519638103303,
+      "k_std": 0.0007489803372005923
+    }
+  ],
+  "reactivity_slope_pcm_per_ppm": 4.164535217318179,
+  "critical_boron_ppm": null,
+  "k_inf_at_zero_boron": 1.4843763438488904
+}

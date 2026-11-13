@@ -1,0 +1,187 @@
+{
+  "params": "params/nuscale_core.json",
+  "units": "cm",
+  "tessellation_cm": 0.15,
+  "levels": {
+    "pin": {
+      "parts": 2,
+      "volume_litres": 0.14,
+      "bounding_box_cm": {
+        "x": [
+          -0.475,
+          0.475
+        ],
+        "y": [
+          -0.475,
+          0.475
+        ],
+        "z": [
+          20.32,
+          236.22
+        ]
+      },
+      "step": "results/cad/nuscale_pin.step",
+      "stl": "results/cad/nuscale_pin.stl",
+      "html": "results/cad/nuscale_pin.html",
+      "checks": [
+        {
+          "check": "clad volume (BRep vs pi(ro^2-ri^2)L)",
+          "expected": 36.757777,
+          "actual": 36.757777,
+          "unit": "cm3",
+          "relative_error": 5.799121716853255e-16,
+          "ok": true
+        },
+        {
+          "check": "pellet volume (BRep vs pi r^2 L)",
+          "expected": 103.449445,
+          "actual": 103.449445,
+          "unit": "cm3",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "fuel rod length",
+          "expected": 215.9,
+          "actual": 215.9,
+          "unit": "cm",
+          "relative_error": 0.0,
+          "ok": true
+        }
+      ]
+    },
+    "assembly": {
+      "parts": 296,
+      "volume_litres": 18.782,
+      "bounding_box_cm": {
+        "x": [
+          -10.736,
+          10.736
+        ],
+        "y": [
+          -10.736,
+          10.736
+        ],
+        "z": [
+          0.0,
+          243.561
+        ]
+      },
+      "step": "results/cad/nuscale_assembly.step",
+      "stl": "results/cad/nuscale_assembly.stl",
+      "html": "results/cad/nuscale_assembly.html",
+      "checks": [
+        {
+          "check": "fuel rod count",
+          "expected": 264,
+          "actual": 264,
+          "unit": "",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "guide tube count",
+          "expected": 24,
+          "actual": 24,
+          "unit": "",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "assembly height",
+          "expected": 243.5606,
+          "actual": 243.5606,
+          "unit": "cm",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "assembly width",
+          "expected": 21.4727,
+          "actual": 21.4727,
+          "unit": "cm",
+          "relative_error": 0.0,
+          "ok": true
+        }
+      ]
+    },
+    "core": {
+      "parts": 41,
+      "volume_litres": 14777.75,
+      "bounding_box_cm": {
+        "x": [
+          -133.35,
+          133.35
+        ],
+        "y": [
+          -133.35,
+          133.35
+        ],
+        "z": [
+          -40.0,
+          280.0
+        ]
+      },
+      "step": "results/cad/nuscale_core.step",
+      "stl": "results/cad/nuscale_core.stl",
+      "html": "results/cad/nuscale_core.html",
+      "checks": [
+        {
+          "check": "core assembly count",
+          "expected": 37,
+          "actual": 37,
+          "unit": "",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "corner assembly radius < reflector inner radius",
+          "expected": 82.0,
+          "actual": 81.883422,
+          "unit": "cm",
+          "relative_error": 0.0014216878647599243,
+          "ok": true
+        }
+      ]
+    },
+    "module": {
+      "parts": 42,
+      "volume_litres": 38355.023,
+      "bounding_box_cm": {
+        "x": [
+          -228.5,
+          228.5
+        ],
+        "y": [
+          -228.5,
+          228.5
+        ],
+        "z": [
+          0.0,
+          2316.0
+        ]
+      },
+      "step": "results/cad/nuscale_module.step",
+      "stl": "results/cad/nuscale_module.stl",
+      "html": "results/cad/nuscale_module.html",
+      "checks": [
+        {
+          "check": "containment vessel height",
+          "expected": 2316.0,
+          "actual": 2316.0,
+          "unit": "cm",
+          "relative_error": 0.0,
+          "ok": true
+        },
+        {
+          "check": "pressure vessel outer diameter",
+          "expected": 266.7,
+          "actual": 266.7,
+          "unit": "cm",
+          "relative_error": 0.0,
+          "ok": true
+        }
+      ]
+    }
+  }
+}

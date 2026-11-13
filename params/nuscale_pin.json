@@ -1,0 +1,20 @@
+{
+  "description": "NuScale 17x17 pin cell, cold zero power, reflective boundaries",
+  "state": "cold zero power (294 K), self consistent with the ENDF/B-VII.1 294 K library",
+  "geometry_source": "ecp-benchmarks smr/smr/surfaces.py, NuScale DCA ML17013A274",
+  "enrichment_note": "3.1 wt% is the highest enrichment used in the DCA assemblies",
+  "pitch_cm": 1.25984,
+  "fuel_radius_cm": 0.405765,
+  "clad_inner_radius_cm": 0.41402,
+  "clad_outer_radius_cm": 0.47498,
+  "fuel_density_g_cm3": 10.4,
+  "clad_density_g_cm3": 6.56,
+  "water_density_g_cm3": 0.998,
+  "temperature_K": 294.0,
+  "u235_enrichment_wt_pct": 3.1,
+  "boron_ppm": [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000],
+  "particles": 20000,
+  "batches": 120,
+  "inactive_batches": 30,
+  "threads": 10
+}
