@@ -40,6 +40,7 @@ scripts/render_cad_blender.py Blender 渲染 CAD（后台模式）
 scripts/make_figures.py   CFD 场图、GIF、三维剖切 → results/figures/
 scripts/make_gallery.py   生成 results/figures/index.html
 docs/cad_cae.md           CAD 与 OpenMC/OpenFOAM 的接口结论
+docs/stellarator_lessons.md 本项目经验如何迁移到仿星器仿真与设计
 results/                  结果（cases/ 下是每个硼浓度的 OpenMC 输入与状态点）
 results/figures/          CAD 渲染与 CFD 图集
 ```
