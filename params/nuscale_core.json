@@ -73,6 +73,21 @@
     "core_barrel_height": 320.0,
     "core_barrel_bottom_z": -40.0
   },
+  "thermal_hydraulics": {
+    "coolant_pressure_mpa": 15.5,
+    "core_flow_area_m2": 2.776,
+    "bundle_flow_area_m2": 0.91,
+    "assembly_hydraulic_diameter_m": 0.0111,
+    "assembly_design_velocity_m_s": 4.0,
+    "assembly_design_pressure_drop_pa": 40000,
+    "core_porosity": 0.55,
+    "sg_design_velocity_m_s": 1.74,
+    "sg_design_pressure_drop_pa": 20000,
+    "sg_secondary_temperature_k": 505.0,
+    "sg_design_inlet_k": 570.0,
+    "sg_design_outlet_k": 543.0,
+    "sg_residence_s": 4.0
+  },
   "module": {
     "thermal_power_mw": 160.0,
     "cnv_outer_radius": 228.5,

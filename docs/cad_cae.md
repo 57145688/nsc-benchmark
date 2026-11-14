@@ -135,14 +135,14 @@ scripts/couple.py            串起 1–5，迭代并写 results/coupling/summar
 
 ### 11.2 CFD 拓扑
 
-5° wedge（1/72 全环），`buoyantBoussinesqPimpleFoam` 瞬态，自适应时间步（maxCo 10，maxΔT 0.5 s），层流 + 多孔介质：
+5° wedge（1/72 全环），`buoyantBoussinesqPimpleFoam` 瞬态，自适应时间步（maxCo 20，maxΔT 0.5 s），层流 + 多孔介质：
 
 | 区域 | 半径 / m | 轴向 / m | 模型 |
 |---|---|---|---|
-| 堆芯 | 0.05–0.94 | 0.2–2.4 | 多孔 `d=2e6`，4 个环带热源 |
+| 堆芯 | 0.05–0.94 | 0.2–2.4 | 多孔 `d=1e5, f=28.20`，4 个环带热源 |
 | 上升段 | 0.05–0.94 | 2.4–8.0 | 开通道 |
 | 吊篮 | 0.94–0.96 | 0–8 | 阻塞 `d=1e10` |
-| 蒸汽发生器 | 0.96–1.2255 | 4–8 | 多孔 `d=1e6` + 热阱，下降流 |
+| 蒸汽发生器 | 0.96–1.2255 | 4–8 | 多孔 `d=1e5, f=4.404` + 线性换热器，下降流 |
 | 下降段 | 0.96–1.2255 | 0–4 | 开通道 |
 | 上下腔室 | — | −0.4–0.2 / 8–10.5 | 开通道 |
 
@@ -168,17 +168,55 @@ scripts/couple.py            串起 1–5，迭代并写 results/coupling/summar
 ### 11.4 本轮缺口
 
 - 只有水密度反馈，没有燃料多普勒与包壳温度反馈；294 K 截面库也不能真正体现热态谱。
-- SG 用体积热阱，不是真正的换热器（二次侧温度、传热系数、管束压降均未建模）。
-- 多孔阻力 `d` 与 wedge 的 1/72 简化会改变流量分配，堆芯 ΔT 约 12 K，低于真实 NuScale 的 ~30 K，需用真实组件压降标定。
-- 瞬态只跑到 60–150 s，属于准稳态；严格收敛需要更长物理时间或稳态求解器。
+- 瞬态只跑到几十秒量级，属于准稳态；严格收敛需要更长物理时间或稳态求解器。
+- 堆芯 `ΔT` 约 14 K，仍低于真实 NuScale 的 ~30 K；多孔压降按 4 m/s 强制循环参考点标定，自然循环实际流速低得多。
 
-## 12. 复现（耦合）
+### 11.5 SG 线性换热器与 40 kPa 占位压降
+
+首轮的 SG 是固定体积热阱，热量移除与入口温度无关；堆芯/吊篮的多孔 `d` 也是拍值。本轮把两者换成可标定的模型。
+
+**SG 换热器。** 在 SG 区写入 `scalarSemiImplicitSource`：
+
+```
+q''' = Su + Sp·T,   Sp = -k,   Su = k·T_sec
+k = ln[(T_in - T_sec)/(T_out - T_sec)] / τ
+```
+
+取二次侧 `T_sec = 505 K`、设计进口 `570 K`、设计出口 `543 K`、停留时间 `τ = 4 s`，得 `k = 0.13420 1/s`、`Su = 67.771 K/s`、`Sp = -0.13420 1/s`。`Sp` 隐式处理，使温度场天然被二次侧温度限住，不会像固定热阱那样过冷或过热。对应 `fvOptions` 中的 `sgHeatExchanger (67.771140 -0.134200)`。
+
+**压降标定。** 多孔源用 `DarcyForchheimer`，只保留惯性项 `ΔP = (ρ/2)·f·L·u²`（`d = 1e5` 仅用于抑制回流）。CFD 堆芯占满吊篮内截面 `2.776 m²`，真实棒束流通面积仅 `0.91 m²`，同一质量流量下 CFD 的表观速度低 3.05 倍，因此先用面积比把设计流速 4 m/s 折算成表观速度 `1.311 m/s`，再反解：
+
+| 区域 | 参考 ΔP | 参考速度 | 长度 | `d` | `f` |
+|---|---|---|---|---|---|
+| 堆芯（37 组件） | 40 kPa（占位） | 4 m/s 棒束 → 1.311 m/s 表观 | 2.2 m | 1e5 | 28.20 |
+| SG 管束 | 20 kPa（占位） | 1.74 m/s | 4.0 m | 1e5 | 4.404 |
+
+40 kPa 是常规 PWR 组件在 4 m/s 下的量级，作为占位值把流程跑通；真实 NuScale 组件压降应在拿到棒束摩擦系数或试验数据后替换 `params/nuscale_core.json` 的 `assembly_design_pressure_drop_pa`，重跑 `build_foam_case.py` 即可，无需改代码。
+
+**验证结果**（`results/coupling/hx_validation.json`）：
+
+| 量 | 值 |
+|---|---|
+| 堆芯轴向速度 | +0.247 m/s |
+| 下降段轴向速度 | −0.348 m/s |
+| 温度范围 | 521.7–621.0 K |
+| SG 进口 / 出口温度 | 575.6 / 524.9 K |
+| SG 热负荷 | 2.274 MW |
+| 堆芯功率（wedge 份额） | 2.222 MW |
+| 能量不平衡 | 2.34% |
+
+SG 热负荷不平衡由 t=0 的 36.7% → 12.5% → 4.0% → 2.34% 单调收敛，说明线性换热器能自行找到与堆芯功率匹配的工作点。用最终场环带密度重跑 OpenMC（`results/coupling/hx_hot/power.json`）得热态 `k_eff = 1.21946 ± 0.00223`，环功率份额 3.66 / 22.74 / 35.41 / 38.19%。
+
+### 11.6 复现（耦合）
 
 ```bash
 python scripts/build_cad.py                         # CAD（可选）
 python scripts/couple.py --iterations 3             # OpenMC ↔ OpenFOAM 三轮
 python scripts/build_foam_case.py --power results/core/power.json --case results/foam/case
-wsl.exe bash scripts/run_foam_wsl.sh results/foam/case
+wsl.exe bash scripts/run_foam_wsl.sh results/foam/case            # 首轮
+wsl.exe bash scripts/run_foam_wsl.sh results/foam/case restart    # 用上一轮场续算
+python scripts/foam_post.py --power results/core/power.json       # 环带密度 + 能量校核
 ```
 
-OpenFOAM 不能读含空格的路径，`run_foam_wsl.sh` 会把案例复制到 `~/nsc_case` 再求解，并把日志与时间目录拷回。中断后可从上一轮场重启：第二个参数传 `restart`。
+`build_foam_case.py` 支持 `--params`（换参数表）与 `--sg-mode {hx,duty}`（线性换热器 / 旧固定热阱）。OpenFOAM 不能读含空格的路径，`run_foam_wsl.sh` 会把案例复制到 `~/nsc_case` 再求解，并把日志与时间目录拷回。重启时先备份最新时刻字段再清空工作目录，否则会静默退回 `setFields` 初场。
+

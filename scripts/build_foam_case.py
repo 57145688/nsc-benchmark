@@ -13,6 +13,7 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PARAMS = os.path.join(HERE, "params", "nuscale_core.json")
 
 RHO0 = 750.0  # kg/m3, Boussinesq reference density
 CP = 5500.0  # J/kg/K
@@ -303,7 +304,56 @@ regions
 """
 
 
-def fv_options(ring_power_w):
+def load_thermal_hydraulics(path=PARAMS):
+    with open(path) as handle:
+        return json.load(handle)["thermal_hydraulics"]
+
+
+def sg_heat_exchanger_coeffs(th):
+    """Linear heat exchanger: q''' = Su + Sp*T inside the SG.
+
+    Calibrated on the design pass so that a plug-flow element entering at
+    ``sg_design_inlet_k`` leaves at ``sg_design_outlet_k`` after
+    ``sg_residence_s``.  ``Sp`` is implicit in scalarSemiImplicitSource, which
+    keeps the sink stable and bounds the coolant at the secondary temperature.
+    """
+    t_sec = float(th["sg_secondary_temperature_k"])
+    t_in = float(th["sg_design_inlet_k"])
+    t_out = float(th["sg_design_outlet_k"])
+    tau = float(th["sg_residence_s"])
+    k = math.log((t_in - t_sec) / (t_out - t_sec)) / tau
+    return k, k * t_sec, -k  # k, Su [K/s], Sp [1/s]
+
+
+def calibrate_porosity(th, length):
+    """Return (d, f) so the porous zone reproduces the design pressure drop.
+
+    The CFD core spans the whole barrel cross-section while the rod bundles
+    only occupy ``bundle_flow_area_m2``; the same mass flow therefore gives a
+    much lower superficial velocity in the porous zone.  Using the reference
+    drop at the forced-circulation velocity keeps the calibration traceable and
+    lets the natural-circulation flow find its own (much lower) pressure drop.
+    """
+    rho = RHO0
+    length = float(length)
+    u_ref = float(th["assembly_design_velocity_m_s"])
+    dp_ref = float(th["assembly_design_pressure_drop_pa"])
+    area_ratio = float(th["core_flow_area_m2"]) / float(th["bundle_flow_area_m2"])
+    u_super = u_ref / area_ratio
+    f = 2.0 * dp_ref / (rho * length * u_super**2)
+    return 1.0e5, f, u_super
+
+
+def calibrate_sg_porosity(th, length):
+    rho = RHO0
+    length = float(length)
+    u_ref = float(th["sg_design_velocity_m_s"])
+    dp_ref = float(th["sg_design_pressure_drop_pa"])
+    f = 2.0 * dp_ref / (rho * length * u_ref**2)
+    return 1.0e5, f
+
+
+def fv_options(ring_power_w, th, sg_mode="hx"):
     """Heat source/sink and porous zones.
 
     ``ring_power_w`` must already be the power released *inside the wedge*
@@ -346,9 +396,26 @@ def fv_options(ring_power_w):
 """
         )
 
-    sink = -total_power / sg_volume / (RHO0 * CP)
-    entries.append(
-        f"""    sgHeatSink
+    if sg_mode == "hx":
+        sg_k, sg_su, sg_sp = sg_heat_exchanger_coeffs(th)
+        entries.append(
+            f"""    sgHeatExchanger
+    {{
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        sg;
+        volumeMode      specific;
+        injectionRateSuSp
+        {{
+            T           ({sg_su:.6f} {sg_sp:.6f});
+        }}
+    }}
+"""
+        )
+    else:
+        sink = -total_power / sg_volume / (RHO0 * CP)
+        entries.append(
+            f"""    sgHeatSink
     {{
         type            scalarSemiImplicitSource;
         selectionMode   cellZone;
@@ -360,66 +427,69 @@ def fv_options(ring_power_w):
         }}
     }}
 """
-    )
+        )
+
+    core_d, core_f, _ = calibrate_porosity(th, CORE_Z[1] - CORE_Z[0])
+    sg_d, sg_f = calibrate_sg_porosity(th, SG_Z[1] - SG_Z[0])
 
     entries.append(
-        """    corePorosity
-    {
+        f"""    corePorosity
+    {{
         type            explicitPorositySource;
         explicitPorositySourceCoeffs
-        {
+        {{
             selectionMode   cellZone;
             cellZone        core;
             type            DarcyForchheimer;
-            d               (2e6 2e6 2e6);
-            f               (0 0 0);
+            d               ({core_d:.6e} {core_d:.6e} {core_d:.6e});
+            f               ({core_f:.6f} {core_f:.6f} {core_f:.6f});
             coordinateSystem
-            {
+            {{
                 type    cartesian;
                 origin  (0 0 0);
                 e1      (1 0 0);
                 e2      (0 1 0);
-            }
-        }
-    }
+            }}
+        }}
+    }}
     sgPorosity
-    {
+    {{
         type            explicitPorositySource;
         explicitPorositySourceCoeffs
-        {
+        {{
             selectionMode   cellZone;
             cellZone        sg;
             type            DarcyForchheimer;
-            d               (1e6 1e6 1e6);
-            f               (0 0 0);
+            d               ({sg_d:.6e} {sg_d:.6e} {sg_d:.6e});
+            f               ({sg_f:.6f} {sg_f:.6f} {sg_f:.6f});
             coordinateSystem
-            {
+            {{
                 type    cartesian;
                 origin  (0 0 0);
                 e1      (1 0 0);
                 e2      (0 1 0);
-            }
-        }
-    }
+            }}
+        }}
+    }}
     shroudBlockage
-    {
+    {{
         type            explicitPorositySource;
         explicitPorositySourceCoeffs
-        {
+        {{
             selectionMode   cellZone;
             cellZone        shroud;
             type            DarcyForchheimer;
             d               (1e10 1e10 1e10);
             f               (0 0 0);
             coordinateSystem
-            {
+            {{
                 type    cartesian;
                 origin  (0 0 0);
                 e1      (1 0 0);
                 e2      (0 1 0);
-            }
-        }
-    }
+            }}
+        }}
+    }}
 """
     )
 
@@ -457,7 +527,7 @@ stopAt          endTime;
 endTime         {end_time};
 deltaT          0.001;
 adjustTimeStep  yes;
-maxCo           10.0;
+maxCo           20.0;
 maxDeltaT       {max_delta_t};
 writeControl    runTime;
 writeInterval   {write_interval};
@@ -550,7 +620,9 @@ relaxationFactors
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--power", default=os.path.join(HERE, "results", "core", "power.json"))
+    parser.add_argument("--params", default=PARAMS)
     parser.add_argument("--case", default=os.path.join(HERE, "results", "foam", "case"))
+    parser.add_argument("--sg-mode", choices=("hx", "duty"), default="hx")
     parser.add_argument("--end-time", type=float, default=150.0)
     parser.add_argument("--max-delta-t", type=float, default=0.5)
     parser.add_argument("--write-interval", type=float, default=30.0)
@@ -564,6 +636,7 @@ def main(argv=None):
 
     with open(args.power) as handle:
         power = json.load(handle)
+    th = load_thermal_hydraulics(args.params)
 
     # Full-loop ring power, then the share released inside the 5 degree wedge.
     full_ring_power_w = {
@@ -584,12 +657,15 @@ def main(argv=None):
         write(os.path.join(case, "system", name), text)
     for name, text in constant_files().items():
         write(os.path.join(case, "constant", name), text)
-    write(os.path.join(case, "constant", "fvOptions"), fv_options(ring_power_w))
+    write(os.path.join(case, "constant", "fvOptions"), fv_options(ring_power_w, th, args.sg_mode))
     for name, text in fields().items():
         write(os.path.join(case, "0", name), text)
 
     total = sum(ring_power_w.values())
     full_total = sum(full_ring_power_w.values())
+    sg_k, sg_su, sg_sp = sg_heat_exchanger_coeffs(th)
+    core_d, core_f, core_u_ref = calibrate_porosity(th, CORE_Z[1] - CORE_Z[0])
+    sg_d, sg_f = calibrate_sg_porosity(th, SG_Z[1] - SG_Z[0])
     info = {
         "total_power_w": total,
         "full_loop_power_w": full_total,
@@ -616,6 +692,24 @@ def main(argv=None):
         "cp": CP,
         "end_time_s": args.end_time,
         "max_delta_t_s": args.max_delta_t,
+        "sg_mode": args.sg_mode,
+        "sg_heat_exchanger": {
+            "k_per_s": sg_k,
+            "su_K_per_s": sg_su,
+            "sp_per_s": sg_sp,
+            "secondary_temperature_K": th["sg_secondary_temperature_k"],
+        },
+        "core_porosity": {
+            "d": core_d,
+            "f": core_f,
+            "reference_superficial_velocity_m_s": core_u_ref,
+            "reference_pressure_drop_pa": th["assembly_design_pressure_drop_pa"],
+        },
+        "sg_porosity": {
+            "d": sg_d,
+            "f": sg_f,
+            "reference_pressure_drop_pa": th["sg_design_pressure_drop_pa"],
+        },
     }
     write(os.path.join(case, "case_info.json"), json.dumps(info, indent=2))
     print(f"wrote OpenFOAM case to {case}")
@@ -628,6 +722,15 @@ def main(argv=None):
             f"  ring {index}: {ring_power_w[index]/1e3:.1f} kW in wedge, "
             f"source {info['ring_source_K_per_s'][index]:.3f} K/s"
         )
+    print(
+        f"  SG HX ({args.sg_mode}): k={sg_k:.4f} 1/s, Su={sg_su:.2f} K/s, "
+        f"Sp={sg_sp:.4f} 1/s, T_sec={th['sg_secondary_temperature_k']:.1f} K"
+    )
+    print(
+        f"  core porosity: d={core_d:.3e} 1/m2, f={core_f:.3f} 1/m "
+        f"(superficial {core_u_ref:.3f} m/s for {th['assembly_design_pressure_drop_pa']/1e3:.0f} kPa)"
+    )
+    print(f"  SG porosity: d={sg_d:.3e} 1/m2, f={sg_f:.3f} 1/m")
     return 0
 
 

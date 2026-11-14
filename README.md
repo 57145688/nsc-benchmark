@@ -96,7 +96,21 @@ python scripts/couple.py --iterations 3 --start-iteration 0
 | 1 | 1.22297 ± 0.00232 | 0.0284 | 0.753 / 0.749 / 0.752 / 0.751 | +0.81 / −0.92 m/s |
 | 2 | 1.22409 ± 0.00205 | 0.0011 | 0.749 / 0.746 / 0.751 / 0.749 | +0.80 / −0.92 m/s |
 
-温度场 540–578 K，下降段 547–550 K；`Δk` 已进入 1σ。CFD 拓扑、功率/物性标定与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
+温度场 540–578 K，下降段 547–550 K；`Δk` 已进入 1σ。这轮用的是固定体积热阱 + 拍值的多孔阻力。
+
+**SG 线性换热器 + 40 kPa 占位压降（本轮）。** SG 区改为 `scalarSemiImplicitSource`，`q''' = k(T_sec − T)`，`k = ln[(T_in−T_sec)/(T_out−T_sec)]/τ = 0.13420 1/s`（`T_sec=505 K`、`T_in/T_out=570/543 K`、`τ=4 s`）；堆芯与 SG 多孔阻力按 `ΔP=(ρ/2)fLu²` 反解，取 37 组件 40 kPa @ 4 m/s（按面积比 3.05 折成表观速度 1.311 m/s）得 `f=28.20`，SG 取 20 kPa 得 `f=4.404`。全部数值在 `params/nuscale_core.json` 的 `thermal_hydraulics` 块。
+
+验证（`results/coupling/hx_validation.json`，累计约 180 s）：
+
+| 量 | 值 |
+|---|---|
+| 堆芯 / 下降段轴向速度 | +0.247 / −0.348 m/s |
+| 温度范围 | 521.7–621.0 K |
+| SG 进口 / 出口 | 575.6 / 524.9 K |
+| SG 热负荷 vs 堆芯功率 | 2.274 MW vs 2.222 MW（不平衡 2.34%） |
+| 热态 k_eff | 1.21946 ± 0.00223 |
+
+能量不平衡从 t=0 的 36.7% 收敛到 2.34%，说明换热器边界能自行匹配堆芯功率。`summary.json` 仍是旧模型的三轮结果，完整耦合需用新模型重跑。CFD 拓扑、标定推导与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
 
 ## 已知局限
 
@@ -114,4 +128,4 @@ python scripts/couple.py --iterations 3 --start-iteration 0
 | 2 | 17×17 组件（导向管、Gd 棒） | k_inf vs 硼，功率峰因子 |
 | 3 | 37 组件 2D 堆芯 + 反射层 | 径向功率分布（冷态与热态密度均已跑通） |
 | 4 | 燃耗（若干循环步） | 燃耗深度、Gd 耗尽、循环长度 |
-| 5 | OpenMC ↔ OpenFOAM 水密度反馈 | k_eff 与环带密度收敛（首轮已完成） |
+| 5 | OpenMC ↔ OpenFOAM 水密度反馈 | k_eff 与环带密度收敛（首轮完成；SG 换热器 + 40 kPa 压降标定已跑通，待重跑完整耦合） |

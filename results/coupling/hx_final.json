@@ -1,0 +1,38 @@
+{
+  "case": "/home/xander/nsc_case",
+  "time": "30.022188142",
+  "temperature_min_K": 521.73878,
+  "temperature_max_K": 620.99752,
+  "temperature_mean_K": 558.0436789051852,
+  "core_mean_velocity_z_m_s": 0.24663149240318627,
+  "downcomer_mean_velocity_z_m_s": -0.3475610752566818,
+  "downcomer_temperature_K": 524.962474159091,
+  "downcomer_density_g_cm3": 0.8088244124693179,
+  "sg_inlet_temperature_K": 575.6091395,
+  "sg_outlet_temperature_K": 524.93399275,
+  "sg_duty_W": 2274156.8941552974,
+  "core_power_W": 2222222.222222222,
+  "energy_imbalance": 0.023370602369883937,
+  "rings": {
+    "1": {
+      "temperature_K": 571.5676628125,
+      "cells": 480,
+      "density_g_cm3": 0.7296116374425
+    },
+    "2": {
+      "temperature_K": 577.9762860000001,
+      "cells": 900,
+      "density_g_cm3": 0.7161278942559999
+    },
+    "3": {
+      "temperature_K": 566.3463732222222,
+      "cells": 900,
+      "density_g_cm3": 0.7399030416526667
+    },
+    "4": {
+      "temperature_K": 544.6786465,
+      "cells": 1380,
+      "density_g_cm3": 0.778437662447
+    }
+  }
+}

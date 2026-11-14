@@ -19,6 +19,24 @@
   },
   "rho0": 750.0,
   "cp": 5500.0,
-  "end_time_s": 60.0,
-  "max_delta_t_s": 0.5
+  "end_time_s": 30.0,
+  "max_delta_t_s": 0.5,
+  "sg_mode": "hx",
+  "sg_heat_exchanger": {
+    "k_per_s": 0.13420027754231284,
+    "su_K_per_s": 67.77114015886798,
+    "sp_per_s": -0.13420027754231284,
+    "secondary_temperature_K": 505.0
+  },
+  "core_porosity": {
+    "d": 100000.0,
+    "f": 28.199551364386526,
+    "reference_superficial_velocity_m_s": 1.3112391930835736,
+    "reference_pressure_drop_pa": 40000
+  },
+  "sg_porosity": {
+    "d": 100000.0,
+    "f": 4.403928304047209,
+    "reference_pressure_drop_pa": 20000
+  }
 }

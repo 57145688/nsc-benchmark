@@ -17,8 +17,18 @@ WORK="${NSC_WORK:-$HOME/nsc_case}"
 export WM_PROJECT_DIR=/usr/share/openfoam
 
 LATEST=""
+RESTART_DIR=""
 if [ "$RESTART" = "restart" ] && [ -d "$WORK" ]; then
     LATEST="$(ls -d "$WORK"/[0-9]* 2>/dev/null | sort -g | tail -1)"
+    if [ -n "$LATEST" ]; then
+        # WORK is deleted below, so keep the restart fields somewhere safe.
+        RESTART_DIR="$(mktemp -d)"
+        for field in T U p_rgh alphat nut; do
+            if [ -f "$LATEST/$field" ]; then
+                cp "$LATEST/$field" "$RESTART_DIR/$field"
+            fi
+        done
+    fi
 fi
 
 rm -rf "$WORK"
@@ -40,12 +50,13 @@ for tool in blockMesh topoSet setFields checkMesh; do
     fi
 done
 
-if [ -n "$LATEST" ]; then
+if [ -n "$RESTART_DIR" ]; then
     for field in T U p_rgh alphat nut; do
-        if [ -f "$LATEST/$field" ]; then
-            cp "$LATEST/$field" "0/$field"
+        if [ -f "$RESTART_DIR/$field" ]; then
+            cp "$RESTART_DIR/$field" "0/$field"
         fi
     done
+    rm -rf "$RESTART_DIR"
 fi
 
 if ! buoyantBoussinesqPimpleFoam > log.solver 2>&1; then
@@ -56,6 +67,15 @@ tail -25 log.solver
 
 mkdir -p "$ROOT/$CASE"
 cp log.* "$ROOT/$CASE/" 2>/dev/null || true
+# Old time directories from earlier runs would be picked up as "latest" by the
+# post-processor, so keep the copied-back case to this run's output only.
+cd "$ROOT/$CASE"
+for stale in [0-9]*; do
+    if [ -d "$stale" ] && [ "$stale" != "0" ]; then
+        rm -rf "$stale"
+    fi
+done
+cd "$WORK"
 for time_dir in [0-9]*; do
     if [ -d "$time_dir" ] && [ "$time_dir" != "0" ]; then
         cp -r "$time_dir" "$ROOT/$CASE/"

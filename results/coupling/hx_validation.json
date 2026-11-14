@@ -1,0 +1,60 @@
+{
+  "model": {
+    "sg": {
+      "k_per_s": 0.13420027754231284,
+      "su_K_per_s": 67.77114015886798,
+      "sp_per_s": -0.13420027754231284,
+      "secondary_temperature_K": 505.0
+    },
+    "core_porosity": {
+      "d": 100000.0,
+      "f": 28.199551364386526,
+      "reference_superficial_velocity_m_s": 1.3112391930835736,
+      "reference_pressure_drop_pa": 40000
+    },
+    "sg_porosity": {
+      "d": 100000.0,
+      "f": 4.403928304047209,
+      "reference_pressure_drop_pa": 20000
+    },
+    "sg_mode": "hx"
+  },
+  "field": {
+    "time_s": "30.022188142",
+    "core_mean_velocity_z_m_s": 0.24663149240318627,
+    "downcomer_mean_velocity_z_m_s": -0.3475610752566818,
+    "temperature_min_K": 521.73878,
+    "temperature_max_K": 620.99752,
+    "sg_inlet_temperature_K": 575.6091395,
+    "sg_outlet_temperature_K": 524.93399275,
+    "sg_duty_W": 2274156.8941552974,
+    "core_power_W": 2222222.222222222,
+    "energy_imbalance": 0.023370602369883937
+  },
+  "rings": {
+    "1": {
+      "temperature_K": 571.5676628125,
+      "density_g_cm3": 0.7296116374425
+    },
+    "2": {
+      "temperature_K": 577.9762860000001,
+      "density_g_cm3": 0.7161278942559999
+    },
+    "3": {
+      "temperature_K": 566.3463732222222,
+      "density_g_cm3": 0.7399030416526667
+    },
+    "4": {
+      "temperature_K": 544.6786465,
+      "density_g_cm3": 0.778437662447
+    }
+  },
+  "hot_k_eff": 1.2194596667179463,
+  "hot_k_sigma": 0.0022284482813474155,
+  "hot_ring_power_fraction": [
+    0.03659021565160538,
+    0.2274131903121477,
+    0.35412174765362253,
+    0.38187484638262437
+  ]
+}

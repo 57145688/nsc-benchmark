@@ -82,7 +82,7 @@ def foam_solve(power_json, end_time, max_delta_t, restart):
     run(command)
 
 
-def foam_report(out_json):
+def foam_report(out_json, power_json):
     run(
         [
             WSL,
@@ -91,6 +91,8 @@ def foam_report(out_json):
             wsl_path(os.path.join(HERE, "scripts", "foam_post.py")),
             "--case",
             WSL_CASE,
+            "--power",
+            wsl_path(power_json),
             "--out",
             wsl_path(out_json),
         ]
@@ -186,7 +188,7 @@ def main(argv=None):
             args.max_delta_t,
             restart=index > 0,
         )
-        foam = foam_report(os.path.join(out_dir, "foam.json"))
+        foam = foam_report(os.path.join(out_dir, "foam.json"), power_path)
 
         feedback = densities_from_foam(power, foam)
         with open(os.path.join(out_dir, "densities.json"), "w") as handle:
@@ -208,6 +210,11 @@ def main(argv=None):
             "temperature_max_K": foam["temperature_max_K"],
             "core_mean_velocity_z_m_s": foam["core_mean_velocity_z_m_s"],
             "downcomer_mean_velocity_z_m_s": foam["downcomer_mean_velocity_z_m_s"],
+            "sg_inlet_temperature_K": foam.get("sg_inlet_temperature_K"),
+            "sg_outlet_temperature_K": foam.get("sg_outlet_temperature_K"),
+            "sg_duty_W": foam.get("sg_duty_W"),
+            "core_power_W": foam.get("core_power_W"),
+            "energy_imbalance": foam.get("energy_imbalance"),
         }
         summary["iterations"].append(record)
         with open(os.path.join(COUPLING, "summary.json"), "w") as handle:

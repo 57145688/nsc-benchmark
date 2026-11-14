@@ -8,6 +8,7 @@ OpenFOAM build used here).
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -133,6 +134,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", default=os.path.join(HERE, "results", "foam", "case"))
     parser.add_argument("--time", default=None)
+    parser.add_argument("--power", default=None)
     parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
 
@@ -160,6 +162,39 @@ def main(argv=None):
         & (radius < case.DOWNCOMER_RADII[1])
     )
     downcomer_temperature = float(temperature[downcomer].mean())
+
+    th = case.load_thermal_hydraulics()
+    sg_k, _, _ = case.sg_heat_exchanger_coeffs(th)
+    dr = (case.R_RPV - case.R0) / NR
+    dz = (case.Z_TOP - case.Z_BOTTOM) / NZ
+    cell_volume = radius * dr * math.radians(case.WEDGE_DEG) * dz
+    sg = (
+        (z >= case.SG_Z[0])
+        & (z <= case.SG_Z[1])
+        & (radius >= case.SG_RADII[0])
+        & (radius < case.SG_RADII[1])
+    )
+    sg_duty = case.RHO0 * case.CP * sg_k * float(
+        np.sum((temperature[sg] - th["sg_secondary_temperature_k"]) * cell_volume[sg])
+    )
+    sg_temperature = temperature[sg]
+    sg_z = z[sg]
+    sg_inlet_temperature = float(
+        sg_temperature[sg_z >= case.SG_Z[1] - 2.0 * dz].mean()
+    )
+    sg_outlet_temperature = float(
+        sg_temperature[sg_z <= case.SG_Z[0] + 2.0 * dz].mean()
+    )
+
+    core_power = None
+    energy_imbalance = None
+    if args.power:
+        with open(args.power) as handle:
+            power = json.load(handle)
+        core_power = float(power["thermal_power_mw"]) * 1e6 * case.SECTOR
+        if core_power:
+            energy_imbalance = abs(sg_duty - core_power) / core_power
+
     report = {
         "case": case_dir,
         "time": time,
@@ -170,6 +205,11 @@ def main(argv=None):
         "downcomer_mean_velocity_z_m_s": float(velocity[downcomer, 2].mean()),
         "downcomer_temperature_K": downcomer_temperature,
         "downcomer_density_g_cm3": density_kg_m3(downcomer_temperature) / 1000.0,
+        "sg_inlet_temperature_K": sg_inlet_temperature,
+        "sg_outlet_temperature_K": sg_outlet_temperature,
+        "sg_duty_W": sg_duty,
+        "core_power_W": core_power,
+        "energy_imbalance": energy_imbalance,
         "rings": rings,
     }
     output = args.out or os.path.join(
