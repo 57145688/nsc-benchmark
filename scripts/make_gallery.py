@@ -12,6 +12,8 @@ import sys
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIGURES = os.path.join(HERE, "results", "figures")
 VALIDATION = os.path.join(HERE, "results", "coupling", "hx_validation.json")
+COLD = os.path.join(HERE, "results", "coupling", "iter0", "power.json")
+HOT = os.path.join(HERE, "results", "coupling", "hx_hot", "power.json")
 
 CAD = [
     ("cad_pin.png", "燃料棒（pin）", "单棒 LOD：包壳 + 芯块，全长 216 cm、外径 0.95 cm。"),
@@ -30,6 +32,19 @@ CFD = [
     ("cfd_energy_balance.png", "能量平衡历史", "SG 热负荷与堆芯功率随时间的变化及不平衡率。"),
     ("cfd_temperature.gif", "温度场动画", "从 {first} s 到 {t} s 的准稳态演化。"),
     ("cfd_domain_3d.png", "CFD 计算域（三维剖切）", "多孔堆芯、上升段、环形 SG、下降段与吊篮。"),
+]
+
+OPENMC = [
+    (
+        "openmc_core_power.png",
+        "37 组件功率分布",
+        "左：初始水密度（0.998 g/cm³）；右：CFD 热态反馈。数字为组件功率/堆芯平均，下方为富集度。",
+    ),
+    (
+        "openmc_keff_rings.png",
+        "k_eff 与径向功率份额",
+        "冷态 {k_cold}、热态 {k_hot}，Δk = {dk}；热态中心组件功率峰值 {peak}× 堆芯平均。",
+    ),
 ]
 
 TEMPLATE = """<!doctype html>
@@ -74,6 +89,18 @@ CAD 用 CadQuery 生成 STEP/STL，再用 Blender 渲染；CFD 是 5° 轴对称
   <div class="fact"><span>SG 进口 / 出口</span><strong>{sg_in} / {sg_out} K</strong></div>
   <div class="fact"><span>SG 热负荷</span><strong>{duty} MW</strong></div>
   <div class="fact"><span>能量不平衡</span><strong>{imbalance}%</strong></div>
+  <div class="fact"><span>k_eff 冷态 → 热态</span><strong>{k_cold} → {k_hot}</strong></div>
+  <div class="fact"><span>热态径向功率峰值</span><strong>{peak}× 平均</strong></div>
+</div>
+
+<h2>OpenMC 中子学（37 组件 2D 堆芯）</h2>
+<div class="links">
+  <a href="../coupling/iter0/power.json">冷态 power.json</a>
+  <a href="../coupling/hx_densities.json">反馈密度</a>
+  <a href="../coupling/hx_hot/power.json">热态 power.json</a>
+</div>
+<div class="grid">
+{openmc}
 </div>
 
 <h2>CAD 模型（Blender 渲染）</h2>
@@ -104,6 +131,13 @@ CARD = """  <figure>
 def main():
     with open(VALIDATION) as handle:
         validation = json.load(handle)
+    with open(COLD) as handle:
+        cold = json.load(handle)
+    with open(HOT) as handle:
+        hot = json.load(handle)
+    peak = max(item["power_fraction"] for item in hot["assemblies"]) * len(
+        hot["assemblies"]
+    )
     field = validation["field"]
     times = []
     case = os.path.join(HERE, "results", "foam", "case")
@@ -126,15 +160,23 @@ def main():
         "imbalance": f"{100 * field['energy_imbalance']:.2f}",
         "t": f"{max(times):.1f}",
         "first": f"{min(times):.0f}",
+        "k_cold": f"{cold['k_eff']:.5f}",
+        "k_hot": f"{hot['k_eff']:.5f}",
+        "dk": f"{cold['k_eff'] - hot['k_eff']:.4f}",
+        "peak": f"{peak:.2f}",
     }
     cad_cards = "\n".join(
         CARD.format(src=src, title=title, caption=caption) for src, title, caption in CAD
+    )
+    openmc_cards = "\n".join(
+        CARD.format(src=src, title=title, caption=caption.format(**values))
+        for src, title, caption in OPENMC
     )
     cfd_cards = "\n".join(
         CARD.format(src=src, title=title, caption=caption.format(**values))
         for src, title, caption in CFD
     )
-    html = TEMPLATE.format(cad=cad_cards, cfd=cfd_cards, **values)
+    html = TEMPLATE.format(cad=cad_cards, cfd=cfd_cards, openmc=openmc_cards, **values)
     path = os.path.join(FIGURES, "index.html")
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(html)

@@ -35,11 +35,30 @@ CAD 用 CadQuery 生成 STEP/STL，再用 Blender 渲染；CFD 是 5° 轴对称
 由 OpenMC 径向功率驱动。图中温度为 15.5 MPa 液态水。</p>
 
 <div class="facts">
-  <div class="fact"><span>热态 k_eff</span><strong>1.21946 ± 0.00223</strong></div>
+  <div class="fact"><span>热态 k_eff</span><strong>1.22378 ± 0.00097</strong></div>
   <div class="fact"><span>堆芯 / 下降段轴向速度</span><strong>+0.245 / -0.344 m/s</strong></div>
   <div class="fact"><span>SG 进口 / 出口</span><strong>572.2 / 524.2 K</strong></div>
   <div class="fact"><span>SG 热负荷</span><strong>2.210 MW</strong></div>
   <div class="fact"><span>能量不平衡</span><strong>0.53%</strong></div>
+  <div class="fact"><span>k_eff 冷态 → 热态</span><strong>1.25552 → 1.22378</strong></div>
+  <div class="fact"><span>热态径向功率峰值</span><strong>1.29× 平均</strong></div>
+</div>
+
+<h2>OpenMC 中子学（37 组件 2D 堆芯）</h2>
+<div class="links">
+  <a href="../coupling/iter0/power.json">冷态 power.json</a>
+  <a href="../coupling/hx_densities.json">反馈密度</a>
+  <a href="../coupling/hx_hot/power.json">热态 power.json</a>
+</div>
+<div class="grid">
+  <figure>
+    <a href="openmc_core_power.png"><img src="openmc_core_power.png" alt="37 组件功率分布" loading="lazy"></a>
+    <figcaption><b>37 组件功率分布</b>左：初始水密度（0.998 g/cm³）；右：CFD 热态反馈。数字为组件功率/堆芯平均，下方为富集度。</figcaption>
+  </figure>
+  <figure>
+    <a href="openmc_keff_rings.png"><img src="openmc_keff_rings.png" alt="k_eff 与径向功率份额" loading="lazy"></a>
+    <figcaption><b>k_eff 与径向功率份额</b>冷态 1.25552、热态 1.22378，Δk = 0.0317；热态中心组件功率峰值 1.29× 堆芯平均。</figcaption>
+  </figure>
 </div>
 
 <h2>CAD 模型（Blender 渲染）</h2>

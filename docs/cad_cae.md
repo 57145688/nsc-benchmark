@@ -205,13 +205,18 @@ k = ln[(T_in - T_sec)/(T_out - T_sec)] / τ
 | 堆芯功率（wedge 份额） | 2.222 MW |
 | 能量不平衡 | 0.53% |
 
-能量不平衡由 t=0 的 36.7% 降到 130 s 的 0.53%；40–130 s 之间在 0.2–4% 间低频振荡（周期约 20 s），对应自然循环回路的密度波振荡，不是数值发散。用 t=30 s 场环带密度重跑 OpenMC（`results/coupling/hx_hot/power.json`）得热态 `k_eff = 1.21946 ± 0.00223`，环功率份额 3.66 / 22.74 / 35.41 / 38.19%。
+能量不平衡由 t=0 的 36.7% 降到 130 s 的 0.53%；40–130 s 之间在 0.2–4% 间低频振荡（周期约 20 s），对应自然循环回路的密度波振荡，不是数值发散。
 
-**图集。** `results/figures/index.html` 汇总 Blender 渲染的 CAD（四级 LOD，含剖切）与 CFD 温度/速度场、能量平衡曲线、13 帧温度动画：
+**中子学校核。** 用该场环带密度重跑 OpenMC（20k 粒子 / 80 批 / 40 非活跃，`results/coupling/hx_hot/power.json`）得热态 `k_eff = 1.22378 ± 0.00097`，环功率份额 3.48 / 21.92 / 35.24 / 39.36%；同设置下冷态（0.998 g/cm³）`k_eff = 1.25552 ± 0.00102`，Δk = 0.0317。热态中心组件功率峰值为堆芯平均的 1.29 倍。组装级功率的统计误差约 5%，只有 20k 粒子以上的 run 才适合画 7×7 功率图。
+
+并顺带修复了参数表里 `enrichment_wt_pct` 的一处笔误：3.1% 组件的 `[6,3]` 应为 `[7,3]`，原表导致 (7,3) 缺富集度、被默认为 1.6%，同时 (6,3) 被重复计入。
+
+**图集。** `results/figures/index.html` 汇总 OpenMC 功率分布与 k_eff 对比、Blender 渲染的 CAD（四级 LOD，含剖切）、CFD 温度/速度场、能量平衡曲线、13 帧温度动画：
 
 ```bash
 blender -b -P scripts/render_cad_blender.py -- --root . --out results/figures
-python scripts/make_figures.py          # 场图 + GIF + 三维剖切
+python scripts/make_figures.py          # CFD 场图 + GIF + 三维剖切
+python scripts/make_core_figures.py     # OpenMC 功率图 + k_eff 对比
 python scripts/make_gallery.py          # 生成 index.html
 ```
 

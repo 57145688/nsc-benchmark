@@ -112,13 +112,13 @@ python scripts/couple.py --iterations 3 --start-iteration 0
 | 温度范围 | 521.4–620.0 K |
 | SG 进口 / 出口 | 572.2 / 524.2 K |
 | SG 热负荷 vs 堆芯功率 | 2.210 MW vs 2.222 MW（不平衡 0.53%） |
-| 热态 k_eff | 1.21946 ± 0.00223 |
+| 热态 k_eff | 1.22378 ± 0.00097 |
 
 能量不平衡从 t=0 的 36.7% 降到 0.53%，中途在 0.2–4% 间低频振荡（自然循环回路的密度波振荡）。`summary.json` 仍是旧模型的三轮结果，完整耦合需用新模型重跑。CFD 拓扑、标定推导与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
 
 ## 图集（CAD 渲染 + CFD 结果）
 
-`results/figures/index.html` 汇总所有可视化：CadQuery 生成的 pin/assembly/core/module 四级模型（Blender 渲染，含剖切）与 5° wedge 的温度场、轴向速度场、能量平衡历史、13 帧温度动画和 CFD 计算域三维剖切。
+`results/figures/index.html` 汇总所有可视化：OpenMC 的 37 组件功率分布与 k_eff 对比，CadQuery 生成的 pin/assembly/core/module 四级模型（Blender 渲染，含剖切）与 5° wedge 的温度场、轴向速度场、能量平衡历史、13 帧温度动画和 CFD 计算域三维剖切。
 
 ```bash
 blender -b -P scripts/render_cad_blender.py -- --root . --out results/figures
