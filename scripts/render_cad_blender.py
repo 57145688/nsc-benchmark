@@ -24,13 +24,18 @@ from mathutils import Vector
 # largest bounding-box dimension), resolution, plus optional section options.
 VARIANTS = {
     "pin": [
-        dict(view=(0.40, -1.0, 0.18), zoom=1.05, res=(700, 1400)),
         dict(
-            view=(0.40, -1.0, 0.18),
-            zoom=0.12,
-            res=(700, 900),
+            view=(0.45, -1.0, 0.22),
+            zoom=0.045,
+            res=(900, 1200),
+            height_fraction=0.93,
+        ),
+        dict(
+            view=(0.45, -1.0, 0.22),
+            zoom=0.045,
+            res=(900, 1200),
             cutaway=True,
-            height_fraction=0.62,
+            height_fraction=0.55,
         ),
     ],
     "assembly": [
@@ -118,19 +123,40 @@ def import_stl(path, scale=0.01):
     return obj
 
 
-def bounds(obj):
-    corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
-    low = Vector((min(c[i] for c in corners) for i in range(3)))
-    high = Vector((max(c[i] for c in corners) for i in range(3)))
+def split_pin(obj):
+    """Separate the pellet and the cladding so they can be coloured."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.mesh.separate(type="LOOSE")
+    parts = list(bpy.context.selected_objects)
+    parts.sort(key=lambda item: max(item.dimensions.x, item.dimensions.y))
+    pellet, clad = make_material("pellet", (0.86, 0.47, 0.16), 0.0, 0.62), make_material(
+        "clad", (0.60, 0.66, 0.74), 0.78, 0.30
+    )
+    materials = [pellet, clad]
+    for part, material in zip(parts, materials):
+        part.data.materials.clear()
+        part.data.materials.append(material)
+    return parts
+
+
+def bounds(objects):
+    points = []
+    for obj in objects:
+        points.extend(obj.matrix_world @ Vector(corner) for corner in obj.bound_box)
+    low = Vector((min(p[i] for p in points) for i in range(3)))
+    high = Vector((max(p[i] for p in points) for i in range(3)))
     return low, high
 
 
-def move_to_origin(obj):
-    low, high = bounds(obj)
+def move_to_origin(objects):
+    low, high = bounds(objects)
     centre = (low + high) / 2.0
-    obj.location.x -= centre.x
-    obj.location.y -= centre.y
-    obj.location.z -= low.z
+    for obj in objects:
+        obj.location.x -= centre.x
+        obj.location.y -= centre.y
+        obj.location.z -= low.z
     bpy.context.view_layer.update()
 
 
@@ -184,14 +210,19 @@ def render_level(args, level):
         setup_lights()
 
         obj = import_stl(stl)
+        if level == "pin":
+            objects = split_pin(obj)
+        else:
+            objects = [obj]
+            obj.data.materials.append(
+                make_material("steel", (0.60, 0.66, 0.74), metallic=0.78, roughness=0.30)
+            )
         if cutaway:
-            cut_half(obj)
-        obj.data.materials.append(
-            make_material("steel", (0.60, 0.66, 0.74), metallic=0.78, roughness=0.30)
-        )
-        move_to_origin(obj)
+            for item in objects:
+                cut_half(item)
+        move_to_origin(objects)
 
-        low, high = bounds(obj)
+        low, high = bounds(objects)
         centre = (low + high) / 2.0
         size = max(high - low)
         fraction = variant.get("height_fraction")
