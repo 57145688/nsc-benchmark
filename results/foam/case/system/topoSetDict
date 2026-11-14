@@ -1,0 +1,121 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+actions
+(
+    {
+        name core;
+        type cellSet;
+        action new;
+        source cylinderToCell;
+        p1 (0 0 0.2);
+        p2 (0 0 2.4);
+        radius 0.94;
+    }
+    {
+        name core;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set core;
+    }
+    {
+        name sg;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.96 -0.2 4.0) (1.2255 0.2 8.0);
+    }
+    {
+        name sg;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set sg;
+    }
+    {
+        name shroud;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.94 -0.2 0.0) (0.96 0.2 8.0);
+    }
+    {
+        name shroud;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set shroud;
+    }
+    {
+        name coreRing1;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.0 -0.2 0.2) (0.15 0.2 2.4);
+    }
+    {
+        name coreRing1;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set coreRing1;
+    }
+    {
+        name coreRing2;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.15 -0.2 0.2) (0.35 0.2 2.4);
+    }
+    {
+        name coreRing2;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set coreRing2;
+    }
+    {
+        name coreRing3;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.35 -0.2 0.2) (0.55 0.2 2.4);
+    }
+    {
+        name coreRing3;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set coreRing3;
+    }
+    {
+        name coreRing4;
+        type cellSet;
+        action new;
+        source boxToCell;
+        box (0.55 -0.2 0.2) (0.85 0.2 2.4);
+    }
+    {
+        name coreRing4;
+        type cellZoneSet;
+        action new;
+        source setToCellZone;
+        set coreRing4;
+    }
+);
+
+// ************************************************************************* //

@@ -1,5 +1,9 @@
 # generated or machine specific files
 results/cases/
+results/core_smoke/
+results/foam/case_smoke/
+results/foam/case/[0-9]*/
+results/foam/case/log.*
 *.h5
 *.xml
 tallies.out

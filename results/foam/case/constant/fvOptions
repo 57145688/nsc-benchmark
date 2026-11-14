@@ -1,0 +1,134 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    coreHeat1
+    {
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        coreRing1;
+        volumeMode      specific;
+        injectionRateSuSp
+        {
+            T           (10.784678 0);
+        }
+    }
+
+    coreHeat2
+    {
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        coreRing2;
+        volumeMode      specific;
+        injectionRateSuSp
+        {
+            T           (13.701776 0);
+        }
+    }
+
+    coreHeat3
+    {
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        coreRing3;
+        volumeMode      specific;
+        injectionRateSuSp
+        {
+            T           (11.309823 0);
+        }
+    }
+
+    coreHeat4
+    {
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        coreRing4;
+        volumeMode      specific;
+        injectionRateSuSp
+        {
+            T           (4.739133 0);
+        }
+    }
+
+    sgHeatSink
+    {
+        type            scalarSemiImplicitSource;
+        selectionMode   cellZone;
+        cellZone        sg;
+        volumeMode      specific;
+        injectionRateSuSp
+        {
+            T           (-5.319500 0);
+        }
+    }
+
+    corePorosity
+    {
+        type            explicitPorositySource;
+        explicitPorositySourceCoeffs
+        {
+            selectionMode   cellZone;
+            cellZone        core;
+            type            DarcyForchheimer;
+            d               (2e6 2e6 2e6);
+            f               (0 0 0);
+            coordinateSystem
+            {
+                type    cartesian;
+                origin  (0 0 0);
+                e1      (1 0 0);
+                e2      (0 1 0);
+            }
+        }
+    }
+    sgPorosity
+    {
+        type            explicitPorositySource;
+        explicitPorositySourceCoeffs
+        {
+            selectionMode   cellZone;
+            cellZone        sg;
+            type            DarcyForchheimer;
+            d               (1e6 1e6 1e6);
+            f               (0 0 0);
+            coordinateSystem
+            {
+                type    cartesian;
+                origin  (0 0 0);
+                e1      (1 0 0);
+                e2      (0 1 0);
+            }
+        }
+    }
+    shroudBlockage
+    {
+        type            explicitPorositySource;
+        explicitPorositySourceCoeffs
+        {
+            selectionMode   cellZone;
+            cellZone        shroud;
+            type            DarcyForchheimer;
+            d               (1e10 1e10 1e10);
+            f               (0 0 0);
+            coordinateSystem
+            {
+                type    cartesian;
+                origin  (0 0 0);
+                e1      (1 0 0);
+                e2      (0 1 0);
+            }
+        }
+    }
+
+// ************************************************************************* //

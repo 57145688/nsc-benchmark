@@ -1,0 +1,373 @@
+{
+  "k_eff": 1.2240944390339952,
+  "k_sigma": 0.002045375587389667,
+  "particles": 5000,
+  "batches": 60,
+  "inactive": 20,
+  "thermal_power_mw": 160.0,
+  "assembly_count": 37,
+  "assemblies": [
+    {
+      "column": 4,
+      "row": 4,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 0.0,
+      "ring": 1,
+      "power_fraction": 0.03843383369968107
+    },
+    {
+      "column": 5,
+      "row": 6,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.03545665409251791
+    },
+    {
+      "column": 3,
+      "row": 6,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.03399391640481256
+    },
+    {
+      "column": 6,
+      "row": 5,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.033270994177129275
+    },
+    {
+      "column": 4,
+      "row": 5,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 21.504,
+      "ring": 2,
+      "power_fraction": 0.03230240409960966
+    },
+    {
+      "column": 3,
+      "row": 5,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 30.411,
+      "ring": 2,
+      "power_fraction": 0.031840880136349774
+    },
+    {
+      "column": 5,
+      "row": 5,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 30.411,
+      "ring": 2,
+      "power_fraction": 0.03160318873820571
+    },
+    {
+      "column": 2,
+      "row": 5,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.03120386988912912
+    },
+    {
+      "column": 2,
+      "row": 3,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.031054576651707966
+    },
+    {
+      "column": 4,
+      "row": 6,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 43.007,
+      "ring": 3,
+      "power_fraction": 0.030913327016405773
+    },
+    {
+      "column": 3,
+      "row": 4,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 21.504,
+      "ring": 2,
+      "power_fraction": 0.0307858842049575
+    },
+    {
+      "column": 5,
+      "row": 4,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 21.504,
+      "ring": 2,
+      "power_fraction": 0.03077047284980253
+    },
+    {
+      "column": 6,
+      "row": 3,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.030586561047033774
+    },
+    {
+      "column": 4,
+      "row": 7,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 64.511,
+      "ring": 4,
+      "power_fraction": 0.029593570679268724
+    },
+    {
+      "column": 4,
+      "row": 3,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 21.504,
+      "ring": 2,
+      "power_fraction": 0.029077920544718132
+    },
+    {
+      "column": 5,
+      "row": 3,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 30.411,
+      "ring": 2,
+      "power_fraction": 0.028972659375460712
+    },
+    {
+      "column": 3,
+      "row": 3,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 30.411,
+      "ring": 2,
+      "power_fraction": 0.028794703198672417
+    },
+    {
+      "column": 6,
+      "row": 4,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 43.007,
+      "ring": 3,
+      "power_fraction": 0.028622259218375707
+    },
+    {
+      "column": 5,
+      "row": 2,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.028265616794362628
+    },
+    {
+      "column": 2,
+      "row": 4,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 43.007,
+      "ring": 3,
+      "power_fraction": 0.027792872599071098
+    },
+    {
+      "column": 3,
+      "row": 2,
+      "enrichment_wt_pct": 2.4,
+      "radius_cm": 48.084,
+      "ring": 3,
+      "power_fraction": 0.027467398083690142
+    },
+    {
+      "column": 7,
+      "row": 4,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 64.511,
+      "ring": 4,
+      "power_fraction": 0.02613025494678275
+    },
+    {
+      "column": 6,
+      "row": 6,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 60.821,
+      "ring": 4,
+      "power_fraction": 0.02612494573325598
+    },
+    {
+      "column": 5,
+      "row": 7,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.024341470694724268
+    },
+    {
+      "column": 2,
+      "row": 6,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 60.821,
+      "ring": 4,
+      "power_fraction": 0.024248528494082072
+    },
+    {
+      "column": 4,
+      "row": 2,
+      "enrichment_wt_pct": 1.6,
+      "radius_cm": 43.007,
+      "ring": 3,
+      "power_fraction": 0.024119782002644426
+    },
+    {
+      "column": 3,
+      "row": 7,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.02401821376433045
+    },
+    {
+      "column": 1,
+      "row": 4,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 64.511,
+      "ring": 4,
+      "power_fraction": 0.02359350916758787
+    },
+    {
+      "column": 2,
+      "row": 2,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 60.821,
+      "ring": 4,
+      "power_fraction": 0.022728213467972585
+    },
+    {
+      "column": 7,
+      "row": 3,
+      "enrichment_wt_pct": null,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.022433894202406112
+    },
+    {
+      "column": 7,
+      "row": 5,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.02227953558956508
+    },
+    {
+      "column": 6,
+      "row": 2,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 60.821,
+      "ring": 4,
+      "power_fraction": 0.021720141236545202
+    },
+    {
+      "column": 1,
+      "row": 3,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.020350140720088918
+    },
+    {
+      "column": 4,
+      "row": 1,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 64.511,
+      "ring": 4,
+      "power_fraction": 0.02013414790668823
+    },
+    {
+      "column": 1,
+      "row": 5,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.019849856249532144
+    },
+    {
+      "column": 5,
+      "row": 1,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.015801051209949703
+    },
+    {
+      "column": 3,
+      "row": 1,
+      "enrichment_wt_pct": 3.1,
+      "radius_cm": 68.0,
+      "ring": 4,
+      "power_fraction": 0.011322751112882036
+    }
+  ],
+  "rings": [
+    {
+      "ring": 1,
+      "radius_cm": 15.0,
+      "power_fraction": 0.03843383369968107,
+      "power_w": 6149413.391948971
+    },
+    {
+      "ring": 2,
+      "radius_cm": 35.0,
+      "power_fraction": 0.24414811314777646,
+      "power_w": 39063698.10364424
+    },
+    {
+      "ring": 3,
+      "radius_cm": 55.0,
+      "power_fraction": 0.3627478279768803,
+      "power_w": 58039652.47630085
+    },
+    {
+      "ring": 4,
+      "radius_cm": 85.0,
+      "power_fraction": 0.35467022517566205,
+      "power_w": 56747236.02810593
+    }
+  ],
+  "densities_g_cm3": {
+    "4,4": 0.7525570426915625,
+    "6,3": 0.7520490438719334,
+    "5,6": 0.7520490438719334,
+    "6,5": 0.7520490438719334,
+    "2,5": 0.7520490438719334,
+    "3,6": 0.7520490438719334,
+    "3,4": 0.7488838434423333,
+    "4,5": 0.7488838434423333,
+    "5,4": 0.7488838434423333,
+    "5,5": 0.7488838434423333,
+    "6,4": 0.7520490438719334,
+    "5,3": 0.7488838434423333,
+    "3,5": 0.7488838434423333,
+    "4,3": 0.7488838434423333,
+    "5,2": 0.7520490438719334,
+    "2,3": 0.7520490438719334,
+    "4,6": 0.7520490438719334,
+    "4,7": 0.7508224319392173,
+    "3,3": 0.7488838434423333,
+    "6,6": 0.7508224319392173,
+    "7,4": 0.7508224319392173,
+    "2,4": 0.7520490438719334,
+    "6,2": 0.7508224319392173,
+    "7,3": 0.7508224319392173,
+    "3,2": 0.7520490438719334,
+    "1,4": 0.7508224319392173,
+    "2,6": 0.7508224319392173,
+    "7,5": 0.7508224319392173,
+    "4,2": 0.7520490438719334,
+    "5,7": 0.7508224319392173,
+    "3,7": 0.7508224319392173,
+    "4,1": 0.7508224319392173,
+    "2,2": 0.7508224319392173,
+    "1,5": 0.7508224319392173,
+    "5,1": 0.7508224319392173,
+    "1,3": 0.7508224319392173,
+    "3,1": 0.7508224319392173
+  },
+  "downcomer_density_g_cm3": 0.7748287084676181
+}

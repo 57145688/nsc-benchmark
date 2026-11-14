@@ -27,9 +27,15 @@ params/nuscale_pin.json   单栅元参数表（第 1 步唯一输入）
 params/nuscale_core.json  组件/堆芯/模块的 CAD 参数表（来自 ecp-benchmarks）
 nsc_bench/model.py        材料与几何构建
 nsc_bench/cad.py          CadQuery 四级实体模型
+nsc_bench/core.py         37 组件 2D OpenMC 堆芯（每组件独立水材料）
 scripts/sweep_boron.py    硼浓度扫描 → results/boron_sweep.json
 scripts/plot_kinf.py      画 k_inf 曲线 → results/kinf_vs_boron.{png,svg}
 scripts/build_cad.py      导出 STEP/STL/HTML → results/cad/
+scripts/run_core.py       堆芯 k_eff + 每组件功率 → power.json
+scripts/build_foam_case.py 功率 → 2D 轴对称自然循环 OpenFOAM 案例
+scripts/run_foam_wsl.sh   WSL 中求解 OpenFOAM（复制到无空格路径）
+scripts/foam_post.py      环带温度 → IAPWS 水密度 → densities.json
+scripts/couple.py         OpenMC ↔ OpenFOAM 迭代 → results/coupling/
 docs/cad_cae.md           CAD 与 OpenMC/OpenFOAM 的接口结论
 results/                  结果（cases/ 下是每个硼浓度的 OpenMC 输入与状态点）
 ```
@@ -76,6 +82,22 @@ python scripts/build_cad.py        # STEP + STL + 三维 HTML + manifest
 
 产物在 `results/cad/`，`manifest.json` 记录体积、包围盒和解析校验（全部通过）。单位、基准面、DAGMC/OpenFOAM 转换约定见 [docs/cad_cae.md](docs/cad_cae.md)。
 
+## OpenMC ↔ OpenFOAM 耦合（第 3 步）
+
+37 组件 2D OpenMC 堆芯（`results/core/power.json`）与 5° 轴对称自然循环 CFD 双向迭代：OpenMC 每组件功率 → 4 个径向环热源；CFD 环带温度 → 15.5 MPa 水密度（IAPWS-IF97）→ OpenMC 每组件水材料。
+
+```bash
+python scripts/couple.py --iterations 3 --start-iteration 0
+```
+
+| 迭代 | k_eff | Δk | 环带密度 / g·cm⁻³（内→外） | 堆芯 / 下降段轴向速度 |
+|---|---|---|---|---|
+| 0（冷态） | 1.25135 ± 0.00512 | — | 0.761 / 0.757 / 0.753 / 0.746 | — |
+| 1 | 1.22297 ± 0.00232 | 0.0284 | 0.753 / 0.749 / 0.752 / 0.751 | +0.81 / −0.92 m/s |
+| 2 | 1.22409 ± 0.00205 | 0.0011 | 0.749 / 0.746 / 0.751 / 0.749 | +0.80 / −0.92 m/s |
+
+温度场 540–578 K，下降段 547–550 K；`Δk` 已进入 1σ。CFD 拓扑、功率/物性标定与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
+
 ## 已知局限
 
 - 单栅元 + 反射边界，缺少组件内相邻棒、导向管、反射层的谱效应，结果只用于验证建模链与硼价值量级。
@@ -90,6 +112,6 @@ python scripts/build_cad.py        # STEP + STL + 三维 HTML + manifest
 | 1 | 单栅元 + 硼扫描（本仓库） | k_inf 曲线单调、硼价值量级合理、临界硼可插值 |
 | 1.5 | 四级 CAD + CAE 接口 | STEP 可重导入、体积校验通过、单位/基准面写清 |
 | 2 | 17×17 组件（导向管、Gd 棒） | k_inf vs 硼，功率峰因子 |
-| 3 | 37 组件 2D 堆芯 + 反射层 | 临界硼、径向功率分布 |
+| 3 | 37 组件 2D 堆芯 + 反射层 | 径向功率分布（冷态与热态密度均已跑通） |
 | 4 | 燃耗（若干循环步） | 燃耗深度、Gd 耗尽、循环长度 |
-| 5 | 单向耦合热工 | 燃料中心温度、DNBR 量级 |
+| 5 | OpenMC ↔ OpenFOAM 水密度反馈 | k_eff 与环带密度收敛（首轮已完成） |

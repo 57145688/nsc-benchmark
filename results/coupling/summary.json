@@ -1,0 +1,100 @@
+{
+  "iterations": [
+    {
+      "iteration": 0,
+      "k_eff": 1.2513494874682842,
+      "k_sigma": 0.005124166035824431,
+      "k_change": null,
+      "ring_power_fraction": [
+        0.028675983010664614,
+        0.1888096234902815,
+        0.35550046668656315,
+        0.42701392681249084
+      ],
+      "ring_temperature_K": {
+        "1": 554.7799815833333,
+        "2": 557.3281542888889,
+        "3": 559.5102080777777,
+        "4": 563.4065664927537
+      },
+      "ring_density_g_cm3": {
+        "1": 0.7612633325054167,
+        "2": 0.7567658076801111,
+        "3": 0.7529144827427223,
+        "4": 0.7455298317328695
+      },
+      "downcomer_temperature_K": 552.2664898772728,
+      "downcomer_density_g_cm3": 0.7656996453666136,
+      "max_ring_density_change": null,
+      "temperature_min_K": 539.33274,
+      "temperature_max_K": 578.27282,
+      "core_mean_velocity_z_m_s": 0.892985316644272,
+      "downcomer_mean_velocity_z_m_s": -0.9543612978701362
+    },
+    {
+      "iteration": 1,
+      "k_eff": 1.2229716116503948,
+      "k_sigma": 0.0023249583782873427,
+      "k_change": 0.02837787581788942,
+      "ring_power_fraction": [
+        0.03825533910276059,
+        0.23926522481158272,
+        0.3591802391461338,
+        0.36329919693952273
+      ],
+      "ring_temperature_K": {
+        "1": 559.7127236875,
+        "2": 561.6542092777778,
+        "3": 560.0004995444444,
+        "4": 560.6413626231885
+      },
+      "ring_density_g_cm3": {
+        "1": 0.7525570426915625,
+        "2": 0.7488838434423333,
+        "3": 0.7520490438719334,
+        "4": 0.7508224319392173
+      },
+      "downcomer_temperature_K": 546.8765478272728,
+      "downcomer_density_g_cm3": 0.7748287084676181,
+      "max_ring_density_change": 0.008706289813854129,
+      "temperature_min_K": 540.33377,
+      "temperature_max_K": 574.9102,
+      "core_mean_velocity_z_m_s": 0.8108295098394565,
+      "downcomer_mean_velocity_z_m_s": -0.9217921221713682
+    },
+    {
+      "iteration": 2,
+      "k_eff": 1.2240944390339952,
+      "k_sigma": 0.002045375587389667,
+      "k_change": 0.0011228273836003666,
+      "ring_power_fraction": [
+        0.03843383369968107,
+        0.24414811314777646,
+        0.3627478279768803,
+        0.35467022517566205
+      ],
+      "ring_temperature_K": {
+        "1": 561.7332066041668,
+        "2": 563.0764913999999,
+        "3": 560.4194982111111,
+        "4": 561.7126713985507
+      },
+      "ring_density_g_cm3": {
+        "1": 0.7487326425596248,
+        "2": 0.7461615954604002,
+        "3": 0.7512470804239333,
+        "4": 0.748771946943174
+      },
+      "downcomer_temperature_K": 549.8361007227272,
+      "downcomer_density_g_cm3": 0.7699691226132819,
+      "max_ring_density_change": 0.003824400131937744,
+      "temperature_min_K": 540.94397,
+      "temperature_max_K": 577.63303,
+      "core_mean_velocity_z_m_s": 0.7970876417692622,
+      "downcomer_mean_velocity_z_m_s": -0.9210433802340909
+    }
+  ],
+  "converged": true,
+  "criterion": "|Delta k| < 5e-3 and max ring density change < 5e-3 g/cm3",
+  "notes": "iteration 0 uses cold coolant; iterations 1-2 are restarted from the previous CFD field"
+}

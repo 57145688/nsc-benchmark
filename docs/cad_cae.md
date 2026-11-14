@@ -117,3 +117,68 @@ python -m http.server 8765 --directory results/cad   # 浏览器看三维视图
 - 未包含蒸汽发生器、稳压器、控制棒驱动机构；`module` 只是包络。
 - DAGMC/OpenFOAM 转换与网格未在本机执行（缺工具链），STEP/STL 已准备好。
 - Zenodo 的 Aldeen 2025.4 基准（661 MB）尚未拉取，可用于核对材料分区与组件排布。
+
+## 11. 耦合实现与首轮结果（裂变堆芯 → 自然循环）
+
+### 11.1 链路
+
+```
+nsc_bench/core.py        37 组件 2D OpenMC（每组件独立水材料）
+scripts/run_core.py      k_eff + 每组件功率 → power.json
+scripts/build_foam_case.py  power.json → 2D 轴对称 OpenFOAM 案例
+scripts/run_foam_wsl.sh      blockMesh/topoSet/setFields/求解，路径无空格化
+scripts/foam_post.py         环带平均温度 → IAPWS 密度 → densities.json
+scripts/couple.py            串起 1–5，迭代并写 results/coupling/summary.json
+```
+
+耦合量：OpenMC 每组件功率按组件中心半径归到 4 个径向环 → CFD 环带热源；CFD 环带平均温度 → 15.5 MPa 液态水密度 → OpenMC 每组件水材料。基准温度 560 K 时水密度 0.752 g/cm³，与 OpenMC 侧的 0.998 g/cm³ 冷态形成约 0.035 的 k_eff 反馈。
+
+### 11.2 CFD 拓扑
+
+5° wedge（1/72 全环），`buoyantBoussinesqPimpleFoam` 瞬态，自适应时间步（maxCo 10，maxΔT 0.5 s），层流 + 多孔介质：
+
+| 区域 | 半径 / m | 轴向 / m | 模型 |
+|---|---|---|---|
+| 堆芯 | 0.05–0.94 | 0.2–2.4 | 多孔 `d=2e6`，4 个环带热源 |
+| 上升段 | 0.05–0.94 | 2.4–8.0 | 开通道 |
+| 吊篮 | 0.94–0.96 | 0–8 | 阻塞 `d=1e10` |
+| 蒸汽发生器 | 0.96–1.2255 | 4–8 | 多孔 `d=1e6` + 热阱，下降流 |
+| 下降段 | 0.96–1.2255 | 0–4 | 开通道 |
+| 上下腔室 | — | −0.4–0.2 / 8–10.5 | 开通道 |
+
+关键建模决定：
+
+1. **SG 必须在下降侧环形通道**。把 SG 放在堆芯正上方的中心柱里，冷却后的流体密度大于下方热流体，重力塌陷会让整个回路倒流。首轮正是这样，堆芯轴向速度在 +1.1 与 −1.1 m/s 之间翻转。
+2. **不能有旁通**。SG 占满吊篮到 RPV 内壁的整个环隙，堆芯填到吊篮内壁，否则冷流体绕过堆芯或 SG，热量带不走。
+3. **功率必须按扇区缩放**。wedge 只代表 1/72 体积，环功率要乘 `5/360` 再除以 wedge 体积；早期把全堆功率直接除 wedge 体积，等效功率密度放大 72 倍，温度场跑到 ±10⁴ K。
+4. **物性用 15.5 MPa 真实值**。`β=2.45e-3 1/K`（560 K）、密度用 IAPWS-IF97 表插值；早期 `β=3.5e-4` 把自然循环驱动力低估约 7 倍。
+
+### 11.3 首轮结果
+
+`results/coupling/summary.json`：
+
+| 迭代 | k_eff | Δk | 环带密度 / g·cm⁻³（内→外） | 堆芯轴向速度 | 下降段速度 |
+|---|---|---|---|---|---|
+| 0（冷态） | 1.25135 ± 0.00512 | — | 0.761 / 0.757 / 0.753 / 0.746 | — | — |
+| 1 | 1.22297 ± 0.00232 | 0.0284 | 0.753 / 0.749 / 0.752 / 0.751 | +0.81 m/s | −0.92 m/s |
+| 2 | 1.22409 ± 0.00205 | 0.0011 | 0.749 / 0.746 / 0.751 / 0.749 | +0.80 m/s | −0.92 m/s |
+
+温度场：540–578 K，下降段 547–550 K，环带平均 560–563 K；`Δk=0.0011` 已在 1σ 以内，环带密度变化 0.0038 g/cm³，按 `|Δk|<5e-3` 且 `|Δρ|<5e-3` 判为收敛。
+
+### 11.4 本轮缺口
+
+- 只有水密度反馈，没有燃料多普勒与包壳温度反馈；294 K 截面库也不能真正体现热态谱。
+- SG 用体积热阱，不是真正的换热器（二次侧温度、传热系数、管束压降均未建模）。
+- 多孔阻力 `d` 与 wedge 的 1/72 简化会改变流量分配，堆芯 ΔT 约 12 K，低于真实 NuScale 的 ~30 K，需用真实组件压降标定。
+- 瞬态只跑到 60–150 s，属于准稳态；严格收敛需要更长物理时间或稳态求解器。
+
+## 12. 复现（耦合）
+
+```bash
+python scripts/build_cad.py                         # CAD（可选）
+python scripts/couple.py --iterations 3             # OpenMC ↔ OpenFOAM 三轮
+python scripts/build_foam_case.py --power results/core/power.json --case results/foam/case
+wsl.exe bash scripts/run_foam_wsl.sh results/foam/case
+```
+
+OpenFOAM 不能读含空格的路径，`run_foam_wsl.sh` 会把案例复制到 `~/nsc_case` 再求解，并把日志与时间目录拷回。中断后可从上一轮场重启：第二个参数传 `restart`。

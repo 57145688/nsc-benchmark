@@ -74,6 +74,7 @@
     "core_barrel_bottom_z": -40.0
   },
   "module": {
+    "thermal_power_mw": 160.0,
     "cnv_outer_radius": 228.5,
     "cnv_shell_thickness": 5.0,
     "cnv_height": 2316.0,
