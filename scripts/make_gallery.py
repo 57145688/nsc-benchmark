@@ -45,6 +45,26 @@ OPENMC = [
         "k_eff 与径向功率份额",
         "冷态 {k_cold}、热态 {k_hot}，Δk = {dk}；热态中心组件功率峰值 {peak}× 堆芯平均。",
     ),
+    (
+        "openmc_pin_power.png",
+        "中心组件 pin 功率",
+        "2.4% 组件内 289 根棒的相对功率，白叉为导向管/仪表管；组件内峰值 {pin_peak}× 平均。",
+    ),
+    (
+        "openmc_axial.png",
+        "轴向功率与通量",
+        "2D 模型上下反射，轴向基本平坦，说明本模型不含轴向泄漏。",
+    ),
+    (
+        "openmc_spectrum.png",
+        "中子能谱",
+        "燃料与栅元水的 E·φ(E)，热中子占比 {thermal}%，快中子占比 {fast}%。",
+    ),
+    (
+        "openmc_convergence.png",
+        "k 收敛与核素反应率",
+        "逐代 k 与累计平均；U-235 裂变贡献 {u235}% 的总裂变率。",
+    ),
 ]
 
 TEMPLATE = """<!doctype html>
@@ -91,6 +111,9 @@ CAD 用 CadQuery 生成 STEP/STL，再用 Blender 渲染；CFD 是 5° 轴对称
   <div class="fact"><span>能量不平衡</span><strong>{imbalance}%</strong></div>
   <div class="fact"><span>k_eff 冷态 → 热态</span><strong>{k_cold} → {k_hot}</strong></div>
   <div class="fact"><span>热态径向功率峰值</span><strong>{peak}× 平均</strong></div>
+  <div class="fact"><span>组件内 pin 峰值</span><strong>{pin_peak}× 平均</strong></div>
+  <div class="fact"><span>U-235 裂变占比</span><strong>{u235}%</strong></div>
+  <div class="fact"><span>燃料谱热中子占比</span><strong>{thermal}%</strong></div>
 </div>
 
 <h2>OpenMC 中子学（37 组件 2D 堆芯）</h2>
@@ -138,6 +161,8 @@ def main():
     peak = max(item["power_fraction"] for item in hot["assemblies"]) * len(
         hot["assemblies"]
     )
+    pin_peak = max(max(row) for row in hot["pin_power"]["relative"])
+    spectrum = hot["spectrum"]["fuel"]
     field = validation["field"]
     times = []
     case = os.path.join(HERE, "results", "foam", "case")
@@ -164,6 +189,10 @@ def main():
         "k_hot": f"{hot['k_eff']:.5f}",
         "dk": f"{cold['k_eff'] - hot['k_eff']:.4f}",
         "peak": f"{peak:.2f}",
+        "pin_peak": f"{pin_peak:.2f}",
+        "thermal": f"{100 * spectrum['thermal_fraction']:.1f}",
+        "fast": f"{100 * spectrum['fast_fraction']:.1f}",
+        "u235": f"{100 * hot['nuclides']['U235_fission_share']:.1f}",
     }
     cad_cards = "\n".join(
         CARD.format(src=src, title=title, caption=caption) for src, title, caption in CAD

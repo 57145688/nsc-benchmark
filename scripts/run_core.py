@@ -70,6 +70,53 @@ def main(argv=None):
     values = tally.get_values(scores=["kappa-fission"]).ravel()
     fractions = values / values.sum()
 
+    # Pin-level power in the centre assembly, normalised to the assembly mean.
+    pins = params["assembly"]["lattice_size"]
+    pin_tally = statepoint.get_tally(name="pin power")
+    pin_values = pin_tally.get_values(scores=["kappa-fission"]).ravel()
+    pin_grid = pin_values.reshape(pins, pins)
+    filled = pin_grid[pin_grid > 0]
+    pin_relative = pin_grid / filled.mean() if filled.size else pin_grid
+
+    # Axial power and flux profiles (40 bins over the active height).
+    z_edges = np.linspace(0.0, params["pin"]["active_fuel_length"], 41)
+    z_centres = 0.5 * (z_edges[:-1] + z_edges[1:])
+    axial_tally = statepoint.get_tally(name="axial profile")
+    axial_values = axial_tally.get_values(
+        scores=["kappa-fission", "flux"]
+    ).reshape(-1, 2)
+    axial_power = axial_values[:, 0] / axial_values[:, 0].mean()
+    axial_flux = axial_values[:, 1] / axial_values[:, 1].mean()
+
+    # Fuel and pin-cell water spectra.
+    energy_edges = np.logspace(-5.0, 7.3, 61)
+    energy_centres = np.sqrt(energy_edges[:-1] * energy_edges[1:])
+    fuel_flux = statepoint.get_tally(name="fuel spectrum").get_values(
+        scores=["flux"]
+    ).ravel()
+    water_flux = statepoint.get_tally(name="water spectrum").get_values(
+        scores=["flux"]
+    ).ravel()
+
+    def spectrum_summary(flux):
+        total = flux.sum()
+        thermal = flux[energy_centres < 0.625].sum() / total
+        fast = flux[energy_centres > 1.0e5].sum() / total
+        mean_energy = float((flux * energy_centres).sum() / total)
+        return {
+            "thermal_fraction": float(thermal),
+            "fast_fraction": float(fast),
+            "mean_energy_eV": mean_energy,
+        }
+
+    nuclide_tally = statepoint.get_tally(name="nuclide rates")
+    nuclide_values = nuclide_tally.get_values().reshape(
+        len(nuclide_tally.nuclides), -1
+    )
+    u235_fission = float(nuclide_values[0, 0])
+    u238_fission = float(nuclide_values[1, 0])
+    fission_total = u235_fission + u238_fission
+
     size = params["core"]["layout_size"]
     pitch = params["core"]["lattice_pitch"]
     enrichment = {}
@@ -103,7 +150,7 @@ def main(argv=None):
             }
         )
 
-    k = statepoint.k_combined
+    k = getattr(statepoint, "keff", statepoint.k_combined)
     report = {
         "k_eff": float(k.nominal_value),
         "k_sigma": float(k.std_dev),
@@ -128,6 +175,31 @@ def main(argv=None):
             if isinstance(key, tuple)
         },
         "downcomer_density_g_cm3": densities.get("downcomer"),
+        "k_batches": [float(value) for value in statepoint.k_generation],
+        "pin_power": {
+            "assembly": [4, 4],
+            "lattice_size": pins,
+            "relative": pin_relative.tolist(),
+        },
+        "axial_power": {
+            "z_cm": z_centres.tolist(),
+            "relative": axial_power.tolist(),
+            "flux_relative": axial_flux.tolist(),
+        },
+        "spectrum": {
+            "energy_edges_eV": energy_edges.tolist(),
+            "fuel_flux": fuel_flux.tolist(),
+            "water_flux": water_flux.tolist(),
+            "fuel": spectrum_summary(fuel_flux),
+            "water": spectrum_summary(water_flux),
+        },
+        "nuclides": {
+            "U235_fission": u235_fission,
+            "U238_fission": u238_fission,
+            "U235_absorption": float(nuclide_values[0, 1]),
+            "U238_absorption": float(nuclide_values[1, 1]),
+            "U235_fission_share": u235_fission / fission_total,
+        },
     }
 
     output = os.path.join(args.out, "power.json")

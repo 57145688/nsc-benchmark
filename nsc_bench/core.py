@@ -123,23 +123,20 @@ class Surfaces:
 
 
 def _fuel_pin_universe(fuel, water, clad, helium, surfaces):
-    return openmc.Universe(
-        cells=[
-            openmc.Cell(fill=fuel, region=-surfaces.pellet),
-            openmc.Cell(
-                fill=helium,
-                region=+surfaces.pellet & -surfaces.clad_inner,
-            ),
-            openmc.Cell(
-                fill=clad,
-                region=+surfaces.clad_inner & -surfaces.clad_outer,
-            ),
-            openmc.Cell(
-                fill=water,
-                region=+surfaces.clad_outer & surfaces.pin_box,
-            ),
-        ]
+    fuel_cell = openmc.Cell(name="fuel", fill=fuel, region=-surfaces.pellet)
+    gap_cell = openmc.Cell(
+        name="gap", fill=helium, region=+surfaces.pellet & -surfaces.clad_inner
     )
+    clad_cell = openmc.Cell(
+        name="clad", fill=clad, region=+surfaces.clad_inner & -surfaces.clad_outer
+    )
+    water_cell = openmc.Cell(
+        name="pin water", fill=water, region=+surfaces.clad_outer & surfaces.pin_box
+    )
+    universe = openmc.Universe(
+        cells=[fuel_cell, gap_cell, clad_cell, water_cell]
+    )
+    return universe, fuel_cell, water_cell
 
 
 def _tube_universe(inner, outer, water, clad, surfaces):
@@ -199,6 +196,7 @@ def build_model(params=None, densities=None, particles=10000, batches=120, inact
     params = params or load_params()
     core = params["core"]
     pin = params["pin"]
+    assembly = params["assembly"]
     densities = densities or {}
 
     surfaces = Surfaces(params)
@@ -217,16 +215,20 @@ def build_model(params=None, densities=None, particles=10000, batches=120, inact
 
     assembly_universes = {}
     water_materials = {}
+    centre_fuel = None
+    centre_water = None
     for key in assembly_keys(params):
         water = _water(f"water {key[0]},{key[1]}", densities.get(key, 0.998))
         water_materials[key] = water
-        fuel_pin = _fuel_pin_universe(
+        fuel_pin, fuel_cell, water_cell = _fuel_pin_universe(
             fuel_materials[key_to_enrichment.get(key, 1.6)],
             water,
             clad,
             helium,
             surfaces,
         )
+        if key == (4, 4):
+            centre_fuel, centre_water = fuel_cell, water_cell
         guide = _tube_universe(
             surfaces.guide_inner,
             surfaces.guide_outer,
@@ -318,14 +320,61 @@ def build_model(params=None, densities=None, particles=10000, batches=120, inact
 
     power = openmc.Tally(name="assembly power")
     power.filters = [openmc.MeshFilter(mesh)]
-    power.scores = ["kappa-fission"]
+    power.scores = ["kappa-fission", "fission", "absorption", "flux"]
+
+    # Pin-level mesh over the centre assembly (4,4), which sits at the origin.
+    pin_pitch = pin["pin_pitch"]
+    pins = assembly["lattice_size"]
+    pin_mesh = openmc.RegularMesh(name="pin mesh")
+    pin_mesh.dimension = [pins, pins, 1]
+    pin_mesh.lower_left = [-pins * pin_pitch / 2.0, -pins * pin_pitch / 2.0, z0]
+    pin_mesh.upper_right = [pins * pin_pitch / 2.0, pins * pin_pitch / 2.0, z1]
+    pin_power = openmc.Tally(name="pin power")
+    pin_power.filters = [openmc.MeshFilter(pin_mesh)]
+    pin_power.scores = ["kappa-fission"]
+
+    # Axial power and flux profile over the whole barrel cross-section.
+    axial_mesh = openmc.RegularMesh(name="axial mesh")
+    axial_mesh.dimension = [1, 1, 40]
+    axial_mesh.lower_left = [
+        -core["core_barrel_inner_radius"],
+        -core["core_barrel_inner_radius"],
+        z0,
+    ]
+    axial_mesh.upper_right = [
+        core["core_barrel_inner_radius"],
+        core["core_barrel_inner_radius"],
+        z1,
+    ]
+    axial = openmc.Tally(name="axial profile")
+    axial.filters = [openmc.MeshFilter(axial_mesh)]
+    axial.scores = ["kappa-fission", "flux"]
+
+    # Spectrum in one fuel pin and in the surrounding pin-cell water.
+    energy_bins = np.logspace(-5.0, 7.3, 61)
+    energy = openmc.EnergyFilter(energy_bins)
+    fuel_spectrum = openmc.Tally(name="fuel spectrum")
+    fuel_spectrum.filters = [openmc.CellFilter([centre_fuel.id]), energy]
+    fuel_spectrum.scores = ["flux"]
+    water_spectrum = openmc.Tally(name="water spectrum")
+    water_spectrum.filters = [openmc.CellFilter([centre_water.id]), energy]
+    water_spectrum.scores = ["flux"]
+
+    # Nuclide-wise fission and absorption in the whole core.
+    nuclides = openmc.Tally(name="nuclide rates")
+    nuclides.nuclides = ["U235", "U238"]
+    nuclides.scores = ["fission", "absorption"]
+
+    tallies = openmc.Tallies(
+        [power, pin_power, axial, fuel_spectrum, water_spectrum, nuclides]
+    )
 
     return (
         openmc.Model(
             geometry=geometry,
             materials=materials,
             settings=settings,
-            tallies=openmc.Tallies([power]),
+            tallies=tallies,
         ),
         mesh,
         water_materials,

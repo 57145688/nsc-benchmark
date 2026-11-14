@@ -116,13 +116,14 @@ python scripts/couple.py --iterations 3 --start-iteration 0
 
 能量不平衡从 t=0 的 36.7% 降到 0.53%，中途在 0.2–4% 间低频振荡（自然循环回路的密度波振荡）。`summary.json` 仍是旧模型的三轮结果，完整耦合需用新模型重跑。CFD 拓扑、标定推导与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
 
-## 图集（CAD 渲染 + CFD 结果）
+## 图集（OpenMC + CAD + CFD）
 
-`results/figures/index.html` 汇总所有可视化：OpenMC 的 37 组件功率分布与 k_eff 对比，CadQuery 生成的 pin/assembly/core/module 四级模型（Blender 渲染，含剖切）与 5° wedge 的温度场、轴向速度场、能量平衡历史、13 帧温度动画和 CFD 计算域三维剖切。
+`results/figures/index.html` 汇总所有可视化：OpenMC 的 37 组件功率分布、中心组件 17×17 pin 功率、轴向功率/通量、中子能谱、k 收敛与核素反应率，CadQuery 生成的 pin/assembly/core/module 四级模型（Blender 渲染，含剖切）与 5° wedge 的温度场、轴向速度场、能量平衡历史、13 帧温度动画和 CFD 计算域三维剖切。
 
 ```bash
 blender -b -P scripts/render_cad_blender.py -- --root . --out results/figures
 python scripts/make_figures.py     # CFD 场图、GIF、三维剖切
+python scripts/make_core_figures.py  # OpenMC 功率、能谱、k 收敛
 python scripts/make_gallery.py     # 生成 index.html
 ```
 

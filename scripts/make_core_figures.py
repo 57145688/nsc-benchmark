@@ -178,12 +178,146 @@ def keff_and_rings(cold, hot, path):
     plt.close(figure)
 
 
+def pin_map(hot, path):
+    grid = np.array(hot["pin_power"]["relative"], dtype=float)
+    params = json.load(open(PARAMS))
+    nonfuel = {tuple(item) for item in params["assembly"]["nonfuel_positions"]}
+    masked = np.ma.masked_less_equal(grid, 0.0)
+    figure, ax = plt.subplots(figsize=(6.4, 5.6), constrained_layout=True)
+    cmap = plt.get_cmap("magma").copy()
+    cmap.set_bad("#1b222b")
+    image = ax.imshow(
+        masked,
+        origin="lower",
+        cmap=cmap,
+        vmin=0.7,
+        vmax=1.3,
+        extent=(0.5, grid.shape[0] + 0.5, 0.5, grid.shape[1] + 0.5),
+    )
+    for column, row in nonfuel:
+        ax.plot(column + 1, row + 1, "x", color="white", markersize=7, mew=2)
+    ax.set_xlabel("pin column")
+    ax.set_ylabel("pin row")
+    ax.set_title(
+        "centre assembly (2.4% U-235): pin power / fuel-pin mean\n"
+        "white x = guide tube or instrument tube",
+        fontsize=10,
+    )
+    colour = figure.colorbar(image, ax=ax, pad=0.02)
+    colour.set_label("pin power / assembly mean")
+    figure.savefig(path, dpi=150)
+    plt.close(figure)
+
+
+def axial_profile(hot, path):
+    z = np.array(hot["axial_power"]["z_cm"])
+    power = np.array(hot["axial_power"]["relative"])
+    flux = np.array(hot["axial_power"]["flux_relative"])
+    figure, ax = plt.subplots(figsize=(6.4, 4.6), constrained_layout=True)
+    ax.plot(z, power, lw=2, color="#e4572e", label="fission heating")
+    ax.plot(z, flux, lw=1.4, ls="--", color="#4361ee", label="flux")
+    ax.set_xlabel("z / cm")
+    ax.set_ylabel("relative to axial mean")
+    ax.set_title("axial profile (reflective ends: no axial leakage)")
+    ax.grid(alpha=0.3)
+    ax.legend(frameon=False)
+    ax.set_ylim(0.95, 1.09)
+    ax.text(
+        0.03,
+        0.94,
+        "flat within +/-3%: the 2D core has no axial leakage,\n"
+        "the remaining wiggle is Monte Carlo noise",
+        transform=ax.transAxes,
+        fontsize=9,
+        color="#333333",
+        va="top",
+    )
+    figure.savefig(path, dpi=150)
+    plt.close(figure)
+
+
+def spectrum(hot, path):
+    edges = np.array(hot["spectrum"]["energy_edges_eV"])
+    centres = np.sqrt(edges[:-1] * edges[1:])
+    widths = np.diff(edges)
+    fuel = np.array(hot["spectrum"]["fuel_flux"])
+    water = np.array(hot["spectrum"]["water_flux"])
+    fuel = fuel / fuel.sum() / widths
+    water = water / water.sum() / widths
+
+    figure, ax = plt.subplots(figsize=(6.6, 4.8), constrained_layout=True)
+    ax.loglog(centres, centres * fuel, lw=2, color="#e4572e", label="fuel pin")
+    ax.loglog(centres, centres * water, lw=2, color="#4361ee", label="pin-cell water")
+    ax.axvline(0.625, color="#9aa5b1", lw=1, ls=":")
+    ax.set_xlabel("energy / eV")
+    ax.set_ylabel("E phi(E) per unit lethargy (normalised)")
+    thermal = hot["spectrum"]["fuel"]
+    ax.set_title(
+        "neutron spectrum: fuel thermal {:.1f}%, fast {:.1f}%".format(
+            100 * thermal["thermal_fraction"], 100 * thermal["fast_fraction"]
+        ),
+        fontsize=10,
+    )
+    ax.grid(alpha=0.3, which="both")
+    ax.legend(frameon=False)
+    figure.savefig(path, dpi=150)
+    plt.close(figure)
+
+
+def convergence(hot, path):
+    k = np.array(hot["k_batches"])
+    generations = np.arange(1, len(k) + 1)
+    running = np.cumsum(k) / generations
+    nuclides = hot["nuclides"]
+
+    figure, (left, right) = plt.subplots(
+        1, 2, figsize=(11, 4.2), constrained_layout=True
+    )
+    left.plot(generations, k, ".", color="#8fb8de", ms=3, label="batch k")
+    left.plot(generations, running, color="#e4572e", lw=1.6, label="running mean")
+    left.axvline(hot["inactive"], color="#9aa5b1", ls=":", lw=1)
+    left.set_xlabel("batch")
+    left.set_ylabel("k")
+    left.set_title(f"eigenvalue history (k = {hot['k_eff']:.5f})")
+    left.grid(alpha=0.3)
+    left.legend(frameon=False, fontsize=8)
+
+    labels = ["U-235 fission", "U-238 fission", "U-235 absorption", "U-238 absorption"]
+    values = [
+        nuclides["U235_fission"],
+        nuclides["U238_fission"],
+        nuclides["U235_absorption"],
+        nuclides["U238_absorption"],
+    ]
+    bars = right.bar(range(4), values, color=["#e4572e", "#f4a261", "#4361ee", "#8fb8de"])
+    right.set_xticks(range(4))
+    right.set_xticklabels(labels, rotation=20, ha="right", fontsize=8)
+    right.set_ylabel("reaction rate per source neutron")
+    right.set_title("nuclide reaction rates")
+    right.grid(axis="y", alpha=0.3)
+    for bar, value in zip(bars, values):
+        right.text(
+            bar.get_x() + bar.get_width() / 2,
+            value,
+            f"{value:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+        )
+    figure.savefig(path, dpi=150)
+    plt.close(figure)
+
+
 def main():
     cold = load(COLD)
     hot = load(HOT)
     power_maps(cold, hot, os.path.join(OUT, "openmc_core_power.png"))
     keff_and_rings(cold, hot, os.path.join(OUT, "openmc_keff_rings.png"))
-    print("wrote openmc_core_power.png, openmc_keff_rings.png")
+    pin_map(hot, os.path.join(OUT, "openmc_pin_power.png"))
+    axial_profile(hot, os.path.join(OUT, "openmc_axial.png"))
+    spectrum(hot, os.path.join(OUT, "openmc_spectrum.png"))
+    convergence(hot, os.path.join(OUT, "openmc_convergence.png"))
+    print("wrote 6 OpenMC figures")
     return 0
 
 
