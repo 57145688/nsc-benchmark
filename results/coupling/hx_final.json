@@ -1,38 +1,38 @@
 {
-  "case": "/home/xander/nsc_case",
-  "time": "30.022188142",
-  "temperature_min_K": 521.73878,
-  "temperature_max_K": 620.99752,
-  "temperature_mean_K": 558.0436789051852,
-  "core_mean_velocity_z_m_s": 0.24663149240318627,
-  "downcomer_mean_velocity_z_m_s": -0.3475610752566818,
-  "downcomer_temperature_K": 524.962474159091,
-  "downcomer_density_g_cm3": 0.8088244124693179,
-  "sg_inlet_temperature_K": 575.6091395,
-  "sg_outlet_temperature_K": 524.93399275,
-  "sg_duty_W": 2274156.8941552974,
+  "case": "E:\\trae\\trae workspace\\nsc-benchmark\\results\\foam\\case",
+  "time": "129.963968185737372",
+  "temperature_min_K": 521.43721,
+  "temperature_max_K": 620.01154,
+  "temperature_mean_K": 556.6385505170371,
+  "core_mean_velocity_z_m_s": 0.2451063888352206,
+  "downcomer_mean_velocity_z_m_s": -0.34351862672349087,
+  "downcomer_temperature_K": 524.0428297818182,
+  "downcomer_density_g_cm3": 0.8101578968163635,
+  "sg_inlet_temperature_K": 572.1947145,
+  "sg_outlet_temperature_K": 524.1700410000001,
+  "sg_duty_W": 2210433.052425163,
   "core_power_W": 2222222.222222222,
-  "energy_imbalance": 0.023370602369883937,
+  "energy_imbalance": 0.005305126408676617,
   "rings": {
     "1": {
-      "temperature_K": 571.5676628125,
+      "temperature_K": 570.4964467083335,
       "cells": 480,
-      "density_g_cm3": 0.7296116374425
+      "density_g_cm3": 0.7318654761256664
     },
     "2": {
-      "temperature_K": 577.9762860000001,
+      "temperature_K": 576.9813851111111,
       "cells": 900,
-      "density_g_cm3": 0.7161278942559999
+      "density_g_cm3": 0.7182211657262222
     },
     "3": {
-      "temperature_K": 566.3463732222222,
+      "temperature_K": 565.3360549111111,
       "cells": 900,
-      "density_g_cm3": 0.7399030416526667
+      "density_g_cm3": 0.7418367909001333
     },
     "4": {
-      "temperature_K": 544.6786465,
+      "temperature_K": 543.6039757681159,
       "cells": 1380,
-      "density_g_cm3": 0.778437662447
+      "density_g_cm3": 0.7802022717887537
     }
   }
 }

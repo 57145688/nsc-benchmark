@@ -36,8 +36,12 @@ scripts/build_foam_case.py 功率 → 2D 轴对称自然循环 OpenFOAM 案例
 scripts/run_foam_wsl.sh   WSL 中求解 OpenFOAM（复制到无空格路径）
 scripts/foam_post.py      环带温度 → IAPWS 水密度 → densities.json
 scripts/couple.py         OpenMC ↔ OpenFOAM 迭代 → results/coupling/
+scripts/render_cad_blender.py Blender 渲染 CAD（后台模式）
+scripts/make_figures.py   CFD 场图、GIF、三维剖切 → results/figures/
+scripts/make_gallery.py   生成 results/figures/index.html
 docs/cad_cae.md           CAD 与 OpenMC/OpenFOAM 的接口结论
 results/                  结果（cases/ 下是每个硼浓度的 OpenMC 输入与状态点）
+results/figures/          CAD 渲染与 CFD 图集
 ```
 
 约定：脚本只读 `params/`，结果只写 `results/`，物理模型不写任何绘图逻辑。
@@ -100,17 +104,27 @@ python scripts/couple.py --iterations 3 --start-iteration 0
 
 **SG 线性换热器 + 40 kPa 占位压降（本轮）。** SG 区改为 `scalarSemiImplicitSource`，`q''' = k(T_sec − T)`，`k = ln[(T_in−T_sec)/(T_out−T_sec)]/τ = 0.13420 1/s`（`T_sec=505 K`、`T_in/T_out=570/543 K`、`τ=4 s`）；堆芯与 SG 多孔阻力按 `ΔP=(ρ/2)fLu²` 反解，取 37 组件 40 kPa @ 4 m/s（按面积比 3.05 折成表观速度 1.311 m/s）得 `f=28.20`，SG 取 20 kPa 得 `f=4.404`。全部数值在 `params/nuscale_core.json` 的 `thermal_hydraulics` 块。
 
-验证（`results/coupling/hx_validation.json`，累计约 180 s）：
+验证（`results/coupling/hx_validation.json`，t = 130 s）：
 
 | 量 | 值 |
 |---|---|
-| 堆芯 / 下降段轴向速度 | +0.247 / −0.348 m/s |
-| 温度范围 | 521.7–621.0 K |
-| SG 进口 / 出口 | 575.6 / 524.9 K |
-| SG 热负荷 vs 堆芯功率 | 2.274 MW vs 2.222 MW（不平衡 2.34%） |
+| 堆芯 / 下降段轴向速度 | +0.245 / −0.344 m/s |
+| 温度范围 | 521.4–620.0 K |
+| SG 进口 / 出口 | 572.2 / 524.2 K |
+| SG 热负荷 vs 堆芯功率 | 2.210 MW vs 2.222 MW（不平衡 0.53%） |
 | 热态 k_eff | 1.21946 ± 0.00223 |
 
-能量不平衡从 t=0 的 36.7% 收敛到 2.34%，说明换热器边界能自行匹配堆芯功率。`summary.json` 仍是旧模型的三轮结果，完整耦合需用新模型重跑。CFD 拓扑、标定推导与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
+能量不平衡从 t=0 的 36.7% 降到 0.53%，中途在 0.2–4% 间低频振荡（自然循环回路的密度波振荡）。`summary.json` 仍是旧模型的三轮结果，完整耦合需用新模型重跑。CFD 拓扑、标定推导与已知缺口见 [docs/cad_cae.md](docs/cad_cae.md) 第 11 节。
+
+## 图集（CAD 渲染 + CFD 结果）
+
+`results/figures/index.html` 汇总所有可视化：CadQuery 生成的 pin/assembly/core/module 四级模型（Blender 渲染，含剖切）与 5° wedge 的温度场、轴向速度场、能量平衡历史、13 帧温度动画和 CFD 计算域三维剖切。
+
+```bash
+blender -b -P scripts/render_cad_blender.py -- --root . --out results/figures
+python scripts/make_figures.py     # CFD 场图、GIF、三维剖切
+python scripts/make_gallery.py     # 生成 index.html
+```
 
 ## 已知局限
 

@@ -20,33 +20,33 @@
     "sg_mode": "hx"
   },
   "field": {
-    "time_s": "30.022188142",
-    "core_mean_velocity_z_m_s": 0.24663149240318627,
-    "downcomer_mean_velocity_z_m_s": -0.3475610752566818,
-    "temperature_min_K": 521.73878,
-    "temperature_max_K": 620.99752,
-    "sg_inlet_temperature_K": 575.6091395,
-    "sg_outlet_temperature_K": 524.93399275,
-    "sg_duty_W": 2274156.8941552974,
+    "time_s": "129.963968185737372",
+    "core_mean_velocity_z_m_s": 0.2451063888352206,
+    "downcomer_mean_velocity_z_m_s": -0.34351862672349087,
+    "temperature_min_K": 521.43721,
+    "temperature_max_K": 620.01154,
+    "sg_inlet_temperature_K": 572.1947145,
+    "sg_outlet_temperature_K": 524.1700410000001,
+    "sg_duty_W": 2210433.052425163,
     "core_power_W": 2222222.222222222,
-    "energy_imbalance": 0.023370602369883937
+    "energy_imbalance": 0.005305126408676617
   },
   "rings": {
     "1": {
-      "temperature_K": 571.5676628125,
-      "density_g_cm3": 0.7296116374425
+      "temperature_K": 570.4964467083335,
+      "density_g_cm3": 0.7318654761256664
     },
     "2": {
-      "temperature_K": 577.9762860000001,
-      "density_g_cm3": 0.7161278942559999
+      "temperature_K": 576.9813851111111,
+      "density_g_cm3": 0.7182211657262222
     },
     "3": {
-      "temperature_K": 566.3463732222222,
-      "density_g_cm3": 0.7399030416526667
+      "temperature_K": 565.3360549111111,
+      "density_g_cm3": 0.7418367909001333
     },
     "4": {
-      "temperature_K": 544.6786465,
-      "density_g_cm3": 0.778437662447
+      "temperature_K": 543.6039757681159,
+      "density_g_cm3": 0.7802022717887537
     }
   },
   "hot_k_eff": 1.2194596667179463,
@@ -56,5 +56,6 @@
     0.2274131903121477,
     0.35412174765362253,
     0.38187484638262437
-  ]
+  ],
+  "hot_k_note": "OpenMC 热态算例基于 t=30 s 场生成的环带密度；t=130 s 场的密度变化 <2e-3 g/cm3"
 }

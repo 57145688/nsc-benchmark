@@ -18,7 +18,7 @@ application     buoyantBoussinesqPimpleFoam;
 startFrom       startTime;
 startTime       0;
 stopAt          endTime;
-endTime         30.0;
+endTime         130.0;
 deltaT          0.001;
 adjustTimeStep  yes;
 maxCo           20.0;

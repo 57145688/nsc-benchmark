@@ -193,19 +193,27 @@ k = ln[(T_in - T_sec)/(T_out - T_sec)] / τ
 
 40 kPa 是常规 PWR 组件在 4 m/s 下的量级，作为占位值把流程跑通；真实 NuScale 组件压降应在拿到棒束摩擦系数或试验数据后替换 `params/nuscale_core.json` 的 `assembly_design_pressure_drop_pa`，重跑 `build_foam_case.py` 即可，无需改代码。
 
-**验证结果**（`results/coupling/hx_validation.json`）：
+**验证结果**（`results/coupling/hx_validation.json`，t = 130 s）：
 
 | 量 | 值 |
 |---|---|
-| 堆芯轴向速度 | +0.247 m/s |
-| 下降段轴向速度 | −0.348 m/s |
-| 温度范围 | 521.7–621.0 K |
-| SG 进口 / 出口温度 | 575.6 / 524.9 K |
-| SG 热负荷 | 2.274 MW |
+| 堆芯轴向速度 | +0.245 m/s |
+| 下降段轴向速度 | −0.344 m/s |
+| 温度范围 | 521.4–620.0 K |
+| SG 进口 / 出口温度 | 572.2 / 524.2 K |
+| SG 热负荷 | 2.210 MW |
 | 堆芯功率（wedge 份额） | 2.222 MW |
-| 能量不平衡 | 2.34% |
+| 能量不平衡 | 0.53% |
 
-SG 热负荷不平衡由 t=0 的 36.7% → 12.5% → 4.0% → 2.34% 单调收敛，说明线性换热器能自行找到与堆芯功率匹配的工作点。用最终场环带密度重跑 OpenMC（`results/coupling/hx_hot/power.json`）得热态 `k_eff = 1.21946 ± 0.00223`，环功率份额 3.66 / 22.74 / 35.41 / 38.19%。
+能量不平衡由 t=0 的 36.7% 降到 130 s 的 0.53%；40–130 s 之间在 0.2–4% 间低频振荡（周期约 20 s），对应自然循环回路的密度波振荡，不是数值发散。用 t=30 s 场环带密度重跑 OpenMC（`results/coupling/hx_hot/power.json`）得热态 `k_eff = 1.21946 ± 0.00223`，环功率份额 3.66 / 22.74 / 35.41 / 38.19%。
+
+**图集。** `results/figures/index.html` 汇总 Blender 渲染的 CAD（四级 LOD，含剖切）与 CFD 温度/速度场、能量平衡曲线、13 帧温度动画：
+
+```bash
+blender -b -P scripts/render_cad_blender.py -- --root . --out results/figures
+python scripts/make_figures.py          # 场图 + GIF + 三维剖切
+python scripts/make_gallery.py          # 生成 index.html
+```
 
 ### 11.6 复现（耦合）
 
